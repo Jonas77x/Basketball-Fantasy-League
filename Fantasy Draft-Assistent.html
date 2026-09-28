@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Draft-Assistent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF2F6;--surface:#FFFFFF;--ink:#14213D;--muted:#5B6782;--line:#D5DCE6;
+  --court:#2B59C3;--court-deep:#1D3F8F;--on-court:#FFFFFF;--hi:#FFC93C;--on-hi:#14213D;
+  --good:#1F9D6B;--bad:#D64545;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow","Segoe UI",Roboto,Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1524;--surface:#172035;--ink:#E8EDF6;--muted:#9AA6BF;--line:#2A3552;
+    --court:#3565D6;--court-deep:#1B3272;--good:#34C28A;--bad:#F06464;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1524;--surface:#172035;--ink:#E8EDF6;--muted:#9AA6BF;--line:#2A3552;
+  --court:#3565D6;--court-deep:#1B3272;--good:#34C28A;--bad:#F06464;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+
+/* Pick-Uhr */
+.clock{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--court);color:var(--on-court);box-shadow:0 1px 0 var(--court-deep)}
+.clock-in{max-width:1240px;margin:0 auto;padding:.7rem 1rem;display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center}
+.pickno{display:flex;align-items:baseline;gap:.4rem;font-family:var(--display)}
+.pickno .lbl{font-size:1.1rem;font-weight:600;opacity:.8}
+.pickno .num{font-size:3.4rem;font-weight:700;line-height:.9;font-variant-numeric:tabular-nums}
+.clock-meta .rd{font-size:.9rem;opacity:.85}
+.turn{font-family:var(--display);font-size:1.35rem;font-weight:600;margin-top:.1rem}
+.turn.go{display:inline-block;background:var(--hi);color:var(--on-hi);padding:.05rem .55rem;border-radius:4px;animation:pulse 1.6s ease-in-out 2}
+@keyframes pulse{50%{transform:scale(1.04)}}
+@media (prefers-reduced-motion:reduce){.turn.go{animation:none}}
+.strip{display:flex;gap:3px;margin-top:.45rem;flex-wrap:wrap}
+.strip span{width:18px;height:8px;border-radius:2px;background:rgba(255,255,255,.22)}
+.strip span.past{background:rgba(255,255,255,.5)}
+.strip span.now{background:#fff}
+.strip span.me{box-shadow:0 0 0 2px var(--hi)}
+.btn-clock{background:transparent;border:1px solid rgba(255,255,255,.55);color:var(--on-court);border-radius:6px;padding:.4rem .75rem}
+.btn-clock:hover{background:rgba(255,255,255,.12)}
+.btn-clock:disabled{opacity:.4;cursor:default}
+
+.wrap{max-width:1240px;margin:0 auto;padding:1rem}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:1rem;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:1rem}
+h2{font-family:var(--display);font-weight:600;font-size:1.45rem;margin:0 0 .5rem;line-height:1.1}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+
+/* Einstellungen */
+.setup{margin-bottom:1rem}
+.setup summary{font-family:var(--display);font-size:1.2rem;font-weight:600;cursor:pointer;list-style-position:outside}
+.setup-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.9rem;margin-top:.8rem}
+.field label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:.2rem}
+.field select{width:100%;padding:.45rem;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.cats{grid-column:1/-1}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:.25rem .7rem;font-size:.9rem}
+.chip.on{background:var(--court);border-color:var(--court);color:#fff}
+.chip.punt{text-decoration:line-through;opacity:.7}
+.check{display:flex;gap:.5rem;align-items:flex-start;grid-column:1/-1;font-size:.92rem}
+.check input{margin-top:.2rem}
+
+/* Empfehlungen */
+.recos{margin-bottom:1rem}
+.recos-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;flex-wrap:wrap}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.7rem;margin-top:.6rem}
+.card{border:1px solid var(--line);border-radius:8px;padding:.75rem;display:flex;flex-direction:column;gap:.35rem;background:var(--bg)}
+.card.first{border-color:var(--court);box-shadow:inset 3px 0 0 var(--court)}
+.card .nm{font-family:var(--display);font-size:1.3rem;font-weight:600;line-height:1.1}
+.card .why{font-size:.88rem}
+.card .why b{color:var(--good);font-weight:600}
+.card .why .w{color:var(--bad);font-weight:600}
+.tag{display:inline-block;font-size:.78rem;padding:.05rem .45rem;border-radius:4px;background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);font-weight:600;align-self:flex-start}
+.card .btn{margin-top:auto}
+.ai{margin-top:.8rem;white-space:pre-wrap;border-left:3px solid var(--hi);padding:.2rem 0 .2rem .8rem;display:none}
+.ai.show{display:block}
+
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:.35rem .7rem;font-size:.9rem;font-weight:500}
+.btn:hover{border-color:var(--court)}
+.btn.primary{background:var(--court);border-color:var(--court);color:#fff}
+.btn.ask{background:var(--hi);border-color:var(--hi);color:var(--on-hi);font-weight:600}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* Board */
+.tools{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.7rem}
+.tools input[type=search]{flex:1 1 200px;padding:.5rem .7rem;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.tools select{padding:.45rem;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.other{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem;font-size:.9rem}
+.other input{flex:1 1 180px;padding:.4rem .6rem;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.list{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:2rem minmax(9rem,1.2fr) minmax(0,3fr) 3rem auto;gap:.6rem;align-items:center;padding:.5rem 0;border-top:1px solid var(--line)}
+.rk{font-family:var(--display);font-size:1.15rem;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.who b{display:block;font-weight:600;line-height:1.2}
+.who span{font-size:.8rem;color:var(--muted)}
+.who em{font-style:normal;color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(9,minmax(2.5rem,1fr));gap:2px}
+.c{font-size:.82rem;text-align:center;padding:.15rem 0;border-radius:3px;background:color-mix(in srgb,var(--tone) var(--a),transparent);font-variant-numeric:tabular-nums}
+.c i{display:block;font-style:normal;font-size:.66rem;color:var(--muted)}
+.c.off{opacity:.35}
+.val{font-family:var(--display);font-size:1.3rem;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.act{display:flex;gap:.3rem}
+.more{margin-top:.7rem}
+@media (max-width:760px){
+  .row{grid-template-columns:1.6rem minmax(0,1fr) 2.8rem;row-gap:.35rem}
+  .stats{grid-column:1/-1}
+  .act{grid-column:1/-1;justify-content:flex-end}
+}
+
+/* Team */
+.roster{list-style:none;margin:0 0 .8rem;padding:0}
+.roster li{display:flex;justify-content:space-between;gap:.5rem;padding:.3rem 0;border-top:1px solid var(--line);font-size:.92rem}
+.roster li span{color:var(--muted);font-size:.82rem}
+.bars{display:flex;flex-direction:column;gap:.3rem}
+.bar{display:grid;grid-template-columns:2.6rem 1fr 2.6rem;gap:.4rem;align-items:center;font-size:.82rem}
+.bar .track{position:relative;height:10px;background:var(--bg);border-radius:3px}
+.bar .track::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--line)}
+.bar .fill{position:absolute;top:0;bottom:0;border-radius:3px}
+.bar.off{opacity:.35}
+.bar .n{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.log{margin-top:1rem}
+.log ol{list-style:none;padding:0;margin:0;max-height:300px;overflow:auto;font-size:.88rem}
+.log li{display:flex;gap:.5rem;padding:.25rem 0;border-top:1px solid var(--line)}
+.log li .no{color:var(--muted);width:2.4rem;font-variant-numeric:tabular-nums}
+.log li.me{font-weight:600}
+.foot{font-size:.82rem;color:var(--muted);margin-top:1.2rem;max-width:70ch}
+.empty{padding:1rem 0;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="clock" id="clock"></header>
+
+<main class="wrap">
+  <details class="setup panel" id="setup">
+    <summary>Liga-Einstellungen</summary>
+    <div class="setup-body">
+      <div class="field"><label for="s-teams">Teams in der Liga</label><select id="s-teams"></select></div>
+      <div class="field"><label for="s-pos">Deine Draft-Position</label><select id="s-pos"></select></div>
+      <div class="field"><label for="s-rounds">Runden (Kadergröße)</label><select id="s-rounds"></select></div>
+      <div class="field"><label>&nbsp;</label><button class="btn" id="reset" type="button">Draft zurücksetzen</button></div>
+      <div class="cats">
+        <label class="small muted" style="display:block;margin-bottom:.3rem">Kategorien (antippen = bewusst opfern, "punten")</label>
+        <div class="chips" id="s-cats"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="s-risk"> <span>Ausfallrisiko einrechnen: Spieler mit wenigen Spielen letzte Saison werden etwas abgewertet.</span></label>
+    </div>
+  </details>
+
+  <div class="grid">
+    <div>
+      <section class="panel recos" id="recos"></section>
+      <section class="panel">
+        <h2>Spielerpool</h2>
+        <div class="tools">
+          <input type="search" id="q" placeholder="Spieler oder Team suchen" aria-label="Spieler suchen">
+          <div class="chips" id="posf"></div>
+          <select id="sort" aria-label="Sortierung">
+            <option value="fit">Sortiert: passt zu deinem Team</option>
+            <option value="val">Sortiert: Gesamtwert</option>
+          </select>
+        </div>
+        <div class="other">
+          <input id="other-name" placeholder="Spieler nicht in der Liste? z. B. ein Rookie" aria-label="Anderer Spieler">
+          <button class="btn" id="other-them" type="button">Als gegnerischen Pick eintragen</button>
+          <button class="btn" id="other-me" type="button">Als meinen Pick eintragen</button>
+        </div>
+        <div class="list" id="list"></div>
+        <button class="btn more" id="more" type="button">Mehr Spieler zeigen</button>
+      </section>
+    </div>
+    <aside>
+      <section class="panel" id="team"></section>
+      <section class="panel log" id="log"></section>
+    </aside>
+  </div>
+
+  <p class="foot">Datenbasis: Pro-Spiel-Werte der Saison 2025-26, Teams nach den Sommer-Transfers aktualisiert (Stand Ende September 2026). Haliburton, Irving und Lillard haben 25/26 verletzt verpasst, bei ihnen stehen ungefähre Werte aus 24/25. Rookies aus dem Draft 2026 fehlen, trag sie oben über "Spieler nicht in der Liste" ein, damit die Pick-Zählung stimmt. Der Wert ist die Summe der Z-Scores über alle aktiven Kategorien.</p>
+</main>
+
+<script>
+// [Name, Team, Pos, Alter, Spiele, Min, FGM, FGA, FTM, FTA, 3PM, REB, AST, STL, BLK, TOV, PTS, Hinweis]
+const DATA=[
+["Luka Dončić","LAL","PG",26,64,35.8,10.8,22.8,7.9,10.1,4.0,7.7,8.3,1.6,0.5,4.0,33.5],
+["Shai Gilgeous-Alexander","OKC","PG",27,68,33.2,10.8,19.4,7.9,9.0,1.7,4.3,6.6,1.4,0.8,2.2,31.1],
+["Anthony Edwards","MIN","SG",24,61,35.0,9.9,20.2,5.7,7.2,3.4,5.0,3.7,1.4,0.8,2.9,28.8],
+["Jaylen Brown","PHI","SF",29,71,34.4,10.4,21.7,6.0,7.5,2.0,6.9,5.1,1.0,0.4,3.6,28.7,"Neu bei PHI"],
+["Tyrese Maxey","PHI","PG",25,70,38.0,9.9,21.4,5.3,6.0,3.1,4.1,6.6,1.9,0.8,2.4,28.3],
+["Kawhi Leonard","TOR","SF",34,65,32.1,9.8,19.4,5.7,6.4,2.6,6.4,3.6,1.9,0.4,2.0,27.9,"Neu bei TOR"],
+["Donovan Mitchell","CLE","SG",29,70,33.5,9.7,20.0,5.3,6.1,3.2,4.5,5.7,1.5,0.3,2.8,27.9],
+["Nikola Jokić","DEN","C",30,65,34.8,9.9,17.4,6.1,7.4,1.7,12.9,10.7,1.4,0.8,3.7,27.7],
+["Giannis Antetokounmpo","MIA","PF",31,36,28.9,10.4,16.6,6.4,9.9,0.4,9.8,5.4,0.9,0.7,3.2,27.6,"Neu bei MIA"],
+["Joel Embiid","PHI","C",31,38,31.6,9.0,18.3,7.5,8.8,1.4,7.7,3.9,0.6,1.2,2.9,26.9],
+["Lauri Markkanen","UTA","PF",28,42,34.4,9.1,19.2,5.7,6.4,2.7,6.9,2.1,1.0,0.5,1.5,26.7],
+["Stephen Curry","GSW","PG",37,43,30.9,8.7,18.6,4.7,5.1,4.4,3.6,4.7,1.1,0.4,2.8,26.6],
+["Devin Booker","PHO","SG",29,64,33.5,8.5,18.7,7.1,8.1,1.9,3.9,6.0,0.8,0.3,3.1,26.1],
+["Jalen Brunson","NYK","PG",29,74,35.0,9.3,19.9,4.8,5.7,2.6,3.3,6.8,0.8,0.1,2.4,26.0],
+["Kevin Durant","HOU","SF",37,78,36.4,9.2,17.6,5.2,6.0,2.4,5.5,4.8,0.8,0.9,3.2,26.0],
+["Jamal Murray","DEN","PG",28,75,35.4,8.8,18.1,4.6,5.2,3.3,4.4,7.1,0.9,0.4,2.3,25.4],
+["Victor Wembanyama","SAS","C",22,64,29.2,8.6,16.9,5.8,7.0,1.9,11.5,3.1,1.0,3.1,2.4,25.0],
+["Deni Avdija","POR","SF",25,66,33.3,7.5,16.1,7.4,9.2,1.9,6.9,6.7,0.8,0.6,3.8,24.2],
+["Michael Porter Jr.","BRK","SF",27,52,32.5,8.5,18.4,3.8,4.4,3.4,7.1,3.0,1.1,0.3,2.3,24.2],
+["Pascal Siakam","IND","PF",31,62,33.2,9.0,18.6,4.2,6.1,1.7,6.6,3.8,1.1,0.4,2.2,24.0],
+["Cade Cunningham","DET","PG",24,64,33.9,8.6,18.6,4.8,6.0,2.0,5.5,9.9,1.4,0.8,3.7,23.9],
+["James Harden","CLE","PG",36,70,34.8,7.0,16.0,6.6,7.5,3.1,4.8,8.0,1.1,0.4,3.5,23.6],
+["Keyonte George","UTA","PG",22,54,33.1,7.4,16.3,6.2,7.0,2.5,3.7,6.1,1.1,0.3,3.1,23.6],
+["Austin Reaves","LAL","SG",27,51,34.5,7.3,14.9,6.3,7.3,2.3,4.7,5.5,1.1,0.4,3.0,23.3],
+["Jalen Johnson","ATL","SF",24,72,35.2,8.3,17.1,4.2,5.3,1.7,10.3,7.9,1.2,0.4,3.4,22.5],
+["Paolo Banchero","ORL","PF",23,72,34.8,7.3,16.0,6.3,8.2,1.2,8.4,5.2,0.7,0.6,3.1,22.2],
+["Jayson Tatum","BOS","PF",27,16,32.6,7.4,17.9,4.1,4.9,2.9,10.0,5.3,1.4,0.2,2.4,21.8,"Nur 16 Spiele nach Achillessehnenriss"],
+["Norman Powell","CHI","SG",32,58,29.6,7.3,15.4,4.5,5.5,2.7,3.5,2.5,1.1,0.2,1.9,21.7,"Neu bei CHI"],
+["Brandon Ingram","LAC","SF",28,77,33.8,8.0,16.7,3.8,4.6,1.8,5.6,3.7,0.8,0.7,2.4,21.5,"Neu bei LAC"],
+["Trey Murphy III","NOP","SF",25,66,35.5,7.5,15.9,3.3,3.7,3.2,5.7,3.8,1.5,0.4,1.8,21.5],
+["Julius Randle","BRK","PF",31,79,33.0,7.3,15.3,5.0,6.3,1.4,6.7,5.0,1.1,0.2,2.7,21.1,"Neu bei BRK"],
+["Cooper Flagg","DAL","SF",19,70,33.5,8.0,17.1,4.0,4.9,1.0,6.7,4.5,1.2,0.9,2.3,21.0],
+["Zion Williamson","NOP","PF",25,62,29.7,7.8,13.0,5.4,7.5,0.0,5.7,3.2,1.0,0.5,2.0,21.0],
+["LeBron James","PHI","SF",41,60,33.2,7.9,15.3,3.9,5.3,1.3,6.1,7.2,1.2,0.6,3.0,20.9,"Neu bei PHI"],
+["Nickeil Alexander-Walker","ATL","SG",27,78,33.4,7.0,15.3,3.6,3.9,3.2,3.4,3.7,1.3,0.5,2.1,20.8],
+["Shaedon Sharpe","POR","SG",22,50,29.4,7.8,17.4,3.1,3.9,2.1,4.3,2.6,1.4,0.1,2.9,20.8],
+["Franz Wagner","ORL","SF",24,34,30.0,7.2,14.9,4.8,5.8,1.4,5.2,3.3,0.9,0.3,1.7,20.6],
+["Tyler Herro","MIL","SG",26,33,31.3,7.5,15.6,3.0,3.3,2.5,4.8,4.1,0.7,0.4,1.9,20.5,"Neu bei MIL"],
+["Anthony Davis","DAL","PF",32,20,31.3,8.5,16.7,3.0,4.1,0.5,11.1,2.8,1.1,1.7,2.1,20.4],
+["Alperen Şengün","HOU","C",23,72,33.3,8.1,15.6,3.6,5.2,0.6,8.9,6.2,1.2,1.1,3.2,20.4],
+["Dillon Brooks","PHO","SF",30,56,30.4,7.4,17.1,3.0,3.6,2.3,3.6,1.8,1.0,0.2,1.8,20.2],
+["Brandon Miller","CHO","SF",23,65,30.3,7.0,16.1,3.1,3.4,3.1,4.9,3.3,1.0,0.7,2.5,20.2],
+["Bam Adebayo","MIA","C",28,73,32.4,6.9,15.7,4.5,5.8,1.7,10.0,3.2,1.2,0.7,1.6,20.1],
+["LaMelo Ball","MIN","PG",24,72,28.0,7.0,17.3,2.2,2.5,3.8,4.8,7.1,1.2,0.2,2.8,20.1,"Neu bei MIN"],
+["Desmond Bane","ORL","SG",27,82,33.6,7.1,14.7,3.8,4.2,2.0,4.1,4.1,1.0,0.5,2.0,20.1],
+["Karl-Anthony Towns","NYK","C",30,75,31.0,6.9,13.8,4.8,5.5,1.5,11.9,3.0,0.9,0.5,2.5,20.1],
+["Jimmy Butler","GSW","SF",36,38,31.1,6.3,12.2,6.5,7.6,0.8,5.6,4.9,1.4,0.2,1.6,20.0],
+["Jalen Duren","DET","C",22,70,28.2,7.5,11.5,4.6,6.1,0.0,10.5,2.0,0.8,0.8,1.9,19.5],
+["Ja Morant","POR","PG",26,20,28.5,6.6,16.1,5.3,5.9,1.0,3.3,8.1,1.0,0.3,3.6,19.5,"Neu bei POR, nur 20 Spiele"],
+["Jaren Jackson Jr.","UTA","C",26,48,30.3,7.1,15.0,3.4,4.2,1.8,5.7,2.0,1.1,1.4,2.2,19.4],
+["RJ Barrett","TOR","SF",25,57,30.3,7.0,14.3,3.5,4.9,1.7,5.3,3.3,0.7,0.3,1.7,19.3],
+["Zach LaVine","SAC","SG",30,39,31.4,6.7,14.0,3.2,3.6,2.5,2.8,2.3,0.7,0.3,1.9,19.2],
+["Darius Garland","LAC","PG",26,45,29.9,6.9,14.9,2.3,2.7,2.7,2.4,6.7,1.0,0.2,2.9,18.8],
+["CJ McCollum","ATL","PG",34,76,29.8,6.9,15.2,2.4,3.1,2.5,3.3,3.9,0.8,0.5,1.8,18.7],
+["De'Aaron Fox","SAS","PG",28,72,31.0,7.1,14.5,2.6,3.4,1.8,3.8,6.2,1.2,0.3,2.3,18.6],
+["Jerami Grant","MEM","PF",31,57,29.7,5.8,12.8,4.6,5.6,2.4,3.5,2.1,0.7,0.6,2.1,18.6,"Neu bei MEM"],
+["Kon Knueppel","CHO","SF",20,81,31.5,6.4,13.4,2.4,2.8,3.4,5.3,3.4,0.7,0.2,2.0,18.5,"Oberschenkelverletzung, evtl. Ausfall zum Saisonstart"],
+["DeMar DeRozan","DEN","PF",36,77,31.2,6.5,13.1,4.9,5.6,0.6,2.9,4.1,1.0,0.3,1.2,18.4,"Neu bei DEN, evtl. von der Bank"],
+["Amen Thompson","HOU","PG",23,79,37.4,7.1,13.2,3.8,4.9,0.3,7.8,5.3,1.5,0.6,2.4,18.3],
+["Evan Mobley","CLE","PF",24,65,31.9,7.2,13.2,2.8,4.6,1.0,9.0,3.6,0.7,1.7,1.9,18.2],
+["Scottie Barnes","TOR","PF",24,80,33.5,7.1,14.0,3.0,3.7,0.9,7.5,5.9,1.4,1.5,2.6,18.1],
+["Trae Young","WAS","PG",27,15,25.6,5.4,11.8,5.3,6.5,1.8,2.0,8.0,0.9,0.1,2.6,17.9,"Nur 15 Spiele 25/26"],
+["Jalen Green","PHO","SG",23,32,25.9,6.8,16.0,2.0,2.7,2.2,3.6,2.8,1.1,0.3,2.3,17.8],
+["Saddiq Bey","NOP","SF",26,72,31.2,6.1,13.4,3.4,4.1,2.1,5.6,2.5,0.9,0.1,0.9,17.7],
+["Bennedict Mathurin","NOP","SF",23,54,30.0,5.4,12.5,5.4,6.2,1.4,5.4,2.4,0.8,0.2,2.2,17.6,"Neu bei NOP"],
+["Coby White","CHO","SG",25,50,25.0,5.6,12.5,3.9,4.8,2.3,3.4,4.0,0.5,0.1,2.6,17.4],
+["Kevin Porter Jr.","MIL","PG",25,38,33.2,6.3,13.5,3.6,4.1,1.2,5.2,7.4,2.2,0.5,2.9,17.4],
+["Paul George","BOS","PF",35,37,30.7,6.1,13.9,2.5,3.0,2.7,5.3,3.6,1.7,0.4,1.7,17.3,"Neu bei BOS"],
+["Ryan Rollins","MIL","PG",23,74,32.1,6.6,13.9,1.7,2.1,2.5,4.6,5.6,1.5,0.4,2.7,17.3],
+["Miles Bridges","PHO","PF",27,77,31.0,6.2,13.5,2.7,3.3,1.9,5.8,3.2,0.6,0.4,1.4,17.1,"Neu bei PHO"],
+["Chet Holmgren","OKC","PF",23,69,28.9,6.3,11.3,3.3,4.1,1.3,8.9,1.7,0.6,1.9,1.6,17.1],
+["Jalen Williams","OKC","SG",24,33,28.4,6.5,13.5,3.3,3.9,0.7,4.6,5.5,1.2,0.3,1.9,17.1],
+["Josh Giddey","CHI","PG",23,54,32.1,5.9,13.3,3.2,4.2,1.9,8.3,9.1,1.0,0.5,3.6,17.0],
+["Payton Pritchard","BOS","PG",28,79,32.4,6.4,13.8,1.5,1.7,2.7,3.9,5.2,0.7,0.1,1.4,17.0],
+["Andrew Nembhard","IND","PG",26,57,31.3,5.8,13.2,3.4,4.1,1.9,2.8,7.7,0.9,0.1,2.4,16.9],
+["Kristaps Porziņģis","GSW","C",30,32,24.0,5.4,12.1,4.2,4.9,1.7,5.2,2.5,0.6,1.2,1.3,16.7],
+["OG Anunoby","NYK","PF",28,67,33.2,5.8,12.0,2.7,3.3,2.3,5.2,2.2,1.6,0.7,1.8,16.7],
+["Stephon Castle","SAS","PG",21,68,30.0,5.7,12.0,4.1,5.6,1.2,5.3,7.4,1.1,0.3,3.2,16.7],
+["Dejounte Murray","NOP","PG",29,14,27.8,6.3,13.0,2.8,3.2,1.4,5.4,6.4,1.6,0.2,3.4,16.7,"Nur 14 Spiele 25/26"],
+["Grayson Allen","CHO","SG",30,51,28.8,5.3,13.1,2.8,3.3,3.1,3.0,3.8,1.4,0.3,1.6,16.5,"Neu bei CHO"],
+["Derrick White","BOS","SG",31,77,34.1,5.7,14.4,2.4,2.6,2.7,4.4,5.4,1.1,1.3,1.7,16.5],
+["Immanuel Quickley","TOR","PG",26,70,31.9,5.7,12.9,2.4,3.0,2.5,4.0,5.9,1.3,0.1,1.5,16.4],
+["Matas Buzelis","CHI","PF",21,77,29.2,5.8,12.5,2.4,3.1,2.2,5.8,2.1,0.7,1.5,2.1,16.3],
+["Jrue Holiday","POR","PG",35,53,29.4,6.0,13.4,1.7,2.0,2.6,4.6,6.1,1.0,0.1,2.8,16.3],
+["Alex Sarr","WAS","C",20,48,27.2,6.6,13.7,2.1,3.0,1.0,7.4,2.7,0.8,2.0,1.7,16.3],
+["Aaron Gordon","DEN","PF",30,36,27.9,5.5,11.1,3.5,4.5,1.7,5.8,2.7,0.6,0.3,1.1,16.2],
+["VJ Edgecombe","PHI","SG",20,75,35.0,6.0,13.7,2.0,2.4,2.0,5.6,4.2,1.4,0.5,1.8,16.0],
+["Domantas Sabonis","SAC","C",29,19,29.7,6.3,11.6,2.9,4.1,0.3,11.4,4.1,0.9,0.2,2.7,15.8,"Nur 19 Spiele 25/26"],
+["Jabari Smith Jr.","HOU","PF",22,77,35.1,5.7,12.6,2.1,2.7,2.3,6.9,1.9,0.7,0.9,1.4,15.8],
+["Collin Sexton","LAL","SG",27,68,23.7,5.3,10.9,3.2,3.8,1.6,2.3,3.3,1.1,0.1,2.1,15.4,"Neu bei LAL"],
+["Jarrett Allen","CLE","C",27,56,27.1,6.0,9.4,3.3,4.7,0.0,8.5,1.8,1.0,0.8,1.3,15.4],
+["Jaime Jaquez Jr.","MIL","SF",24,75,28.3,6.2,12.2,2.2,2.9,0.8,5.0,4.7,0.7,0.3,2.0,15.4,"Neu bei MIL"],
+["Andrew Wiggins","MIA","SF",30,68,30.3,5.7,12.1,1.9,2.4,2.0,4.8,2.7,1.1,1.0,1.5,15.4],
+["Onyeka Okongwu","ATL","C",25,74,31.0,5.6,11.6,2.1,2.7,1.9,7.6,3.1,1.1,1.1,1.7,15.2],
+["Russell Westbrook","SAC","PG",37,64,29.0,5.6,13.1,2.0,2.9,2.0,5.4,6.7,1.3,0.2,3.3,15.2],
+["Nikola Vučević","ORL","C",35,64,28.4,6.2,12.5,1.2,1.5,1.6,8.4,3.3,0.6,0.6,1.3,15.1,"Neu bei ORL"],
+["Anthony Black","ORL","PG",22,64,29.8,5.4,12.1,2.6,3.6,1.6,3.8,3.7,1.4,0.7,2.1,15.0],
+["Ayo Dosunmu","MIN","SG",26,69,27.3,5.6,10.8,1.8,2.1,1.8,3.4,3.6,0.8,0.3,1.4,14.8],
+["Kyshawn George","WAS","SF",22,48,29.0,5.3,12.0,2.2,2.7,2.1,5.1,4.5,1.0,0.9,2.6,14.8],
+["Jaden McDaniels","MIN","PF",25,73,31.7,5.7,11.1,2.0,2.4,1.4,4.2,2.7,1.1,1.0,1.8,14.8],
+["Peyton Watson","CLE","SF",23,54,29.6,5.3,10.8,2.6,3.5,1.5,4.9,2.1,0.9,1.1,1.7,14.6,"Neu bei CLE"],
+["Mikal Bridges","NYK","SF",29,82,32.8,5.8,11.7,1.0,1.2,1.9,3.8,3.7,1.3,0.8,1.0,14.4],
+["Walker Kessler","LAL","C",24,5,30.8,5.2,7.4,2.8,4.0,1.2,10.8,3.0,1.4,1.8,3.2,14.4,"Neu bei LAL, nur 5 Spiele 25/26"],
+["Anfernee Simons","PHI","SG",26,55,24.9,5.2,11.8,1.3,1.4,2.7,2.5,2.4,0.5,0.1,1.2,14.3,"Neu bei PHI"],
+["Jeremiah Fears","NOP","PG",19,82,25.8,5.3,12.3,2.4,3.0,1.2,3.7,3.4,1.2,0.4,2.2,14.3],
+["Scoot Henderson","POR","PG",21,30,24.9,4.8,11.4,2.8,3.3,1.9,2.7,3.7,0.9,0.3,2.4,14.2],
+["P.J. Washington","DAL","PF",27,56,31.0,5.3,11.8,2.2,3.3,1.4,7.0,1.8,1.0,1.1,1.7,14.2],
+["Ivica Zubac","IND","C",28,48,30.1,6.0,10.0,2.1,3.0,0.0,10.6,2.2,0.4,0.8,1.8,14.1],
+["Tre Jones","CHI","PG",26,65,27.0,5.2,9.5,2.9,3.5,0.6,3.1,5.4,1.2,0.2,1.4,14.1],
+["Kelly Oubre Jr.","IND","SF",30,50,31.5,5.1,10.9,2.2,2.9,1.7,5.0,1.6,1.4,0.5,1.4,14.1,"Neu bei IND"],
+["Santi Aldama","DAL","PF",25,43,27.9,5.3,11.1,1.8,2.7,1.6,6.7,2.9,0.9,0.7,1.3,14.0,"Neu bei DAL"],
+["Keegan Murray","SAC","PF",25,23,34.5,5.5,13.0,1.7,2.1,1.3,5.7,1.7,1.0,1.6,1.2,14.0],
+["Devin Vassell","SAS","SG",25,67,30.5,4.9,11.3,1.6,1.9,2.5,4.0,2.5,0.9,0.4,0.9,13.9],
+["Ace Bailey","UTA","SF",19,72,27.6,5.5,12.4,0.9,1.2,1.9,4.2,1.8,0.8,0.7,1.5,13.8],
+["Brandin Podziemski","GSW","SG",22,82,28.5,4.8,10.6,2.3,2.9,1.9,5.1,3.7,1.1,0.2,1.6,13.8],
+["Jalen Suggs","ORL","PG",24,57,27.6,4.9,11.4,1.8,2.1,2.1,3.9,5.5,1.8,0.7,2.7,13.8],
+["Cedric Coward","MEM","SG",22,62,25.8,4.9,10.5,2.3,2.7,1.5,5.9,2.8,0.6,0.4,1.7,13.6],
+["Zach Edey","MEM","C",23,11,25.8,5.6,8.9,2.3,2.9,0.1,11.1,1.1,0.6,1.9,2.4,13.6,"Nur 11 Spiele 25/26"],
+["John Collins","DET","PF",28,69,27.1,5.3,9.6,1.7,2.2,1.3,5.3,1.0,0.9,0.7,1.4,13.6,"Neu bei DET"],
+["Ajay Mitchell","OKC","SG",23,57,25.8,5.0,10.4,2.5,2.8,1.1,3.3,3.6,1.2,0.3,1.4,13.6],
+["Naz Reid","CHO","C",26,77,26.1,5.2,11.3,1.2,1.6,2.1,6.2,2.2,1.0,1.0,1.6,13.6,"Neu bei CHO"],
+["Reed Sheppard","HOU","SG",21,82,26.2,5.0,11.5,0.8,1.0,2.8,2.9,3.4,1.5,0.7,1.5,13.5],
+["Toumani Camara","POR","PF",25,82,33.3,4.8,10.9,1.2,1.7,2.7,5.1,2.5,1.1,0.4,1.8,13.4],
+["Tobias Harris","SAS","PF",33,63,27.7,4.9,10.5,2.2,2.5,1.3,5.1,2.5,0.9,0.4,1.0,13.3,"Neu bei SAS"],
+["Jaylon Tyson","CLE","SG",23,66,26.9,5.0,10.2,1.2,1.6,2.0,5.1,2.2,0.8,0.4,1.5,13.2],
+["Collin Gillespie","PHO","PG",26,80,28.5,4.4,10.5,1.0,1.1,2.9,4.1,4.6,1.2,0.2,1.6,12.7],
+["Deandre Ayton","WAS","C",27,72,27.2,5.6,8.3,1.3,2.0,0.0,8.0,0.8,0.6,1.0,1.2,12.5,"Neu bei WAS"],
+["Maxime Raynaud","SAC","C",22,74,26.5,5.2,9.1,1.8,2.3,0.3,7.5,1.4,0.5,0.5,1.3,12.5],
+["Jonathan Kuminga","MIN","PF",23,36,23.1,4.4,9.4,2.5,3.4,1.0,5.6,2.3,0.6,0.3,1.9,12.2,"Neu bei MIN"],
+["Donte DiVincenzo","MIN","SG",29,82,30.4,4.1,10.2,1.0,1.3,3.0,4.1,3.8,1.3,0.4,1.4,12.2],
+["Cameron Johnson","DEN","SF",29,54,30.5,4.2,8.8,1.7,2.1,2.0,3.8,2.4,0.7,0.4,0.9,12.2],
+["Donovan Clingan","POR","C",21,77,27.2,4.6,8.9,1.8,2.6,1.1,11.6,2.1,0.6,1.7,1.2,12.1],
+["Christian Braun","DEN","SG",24,44,31.8,4.6,8.8,1.8,2.3,1.0,4.8,2.7,0.7,0.3,1.0,12.0],
+["Josh Hart","NYK","SF",30,66,30.2,4.6,9.0,1.4,1.9,1.5,7.4,4.8,1.1,0.3,1.9,12.0],
+["Dyson Daniels","ATL","SG",22,76,33.2,5.3,10.2,1.0,1.6,0.3,6.8,5.9,2.0,0.4,1.8,11.9],
+["Myles Turner","MIL","C",29,71,26.9,4.0,9.1,1.8,2.5,2.1,5.3,1.5,0.7,1.6,1.2,11.9],
+["Wendell Carter Jr.","ORL","C",26,78,29.3,4.2,8.2,2.5,3.2,0.9,7.4,2.0,0.8,0.6,1.3,11.8],
+["Dylan Harper","SAS","SG",19,69,22.6,4.8,9.5,1.3,1.7,0.9,3.4,3.9,0.8,0.3,1.4,11.8],
+["Nic Claxton","CHI","C",26,69,27.8,4.8,8.4,2.0,3.3,0.0,6.9,3.7,0.7,1.1,1.4,11.7,"Neu bei CHI"],
+["Isaiah Collier","UTA","PG",21,59,25.7,4.3,8.7,2.6,3.5,0.5,2.5,7.2,1.1,0.3,2.5,11.7],
+["Bilal Coulibaly","WAS","SG",21,56,26.2,4.1,9.7,2.4,3.2,1.2,4.3,2.6,1.3,1.0,1.4,11.7],
+["Derik Queen","NOP","C",21,81,25.0,4.4,9.2,2.7,3.4,0.3,7.1,3.7,1.0,0.9,2.3,11.7],
+["Mark Williams","PHO","C",24,60,23.6,4.7,7.3,2.3,2.9,0.0,8.0,1.0,0.9,0.9,1.1,11.7],
+["Kyle Filipowski","UTA","C",22,77,23.4,4.2,8.5,2.1,2.8,1.0,7.2,2.6,0.9,0.5,1.6,11.4],
+["Cam Spencer","MEM","SG",25,72,23.8,3.7,7.7,1.8,1.9,2.0,2.5,5.6,0.7,0.2,1.3,11.1],
+["Kel'el Ware","MIL","C",21,77,22.1,4.5,8.4,0.9,1.2,1.2,9.0,0.7,0.8,1.1,0.8,11.1,"Neu bei MIL"],
+["Rudy Gobert","MIN","C",33,76,31.3,4.4,6.5,2.1,4.0,0.0,11.5,1.7,0.8,1.6,1.4,10.9],
+["Jusuf Nurkić","UTA","C",31,41,26.4,4.4,8.7,1.5,2.8,0.6,10.4,4.8,1.3,0.5,2.5,10.9],
+["Jakob Poeltl","TOR","C",30,46,25.0,4.7,6.7,1.3,2.1,0.0,7.0,2.0,0.9,0.7,1.2,10.7],
+["Neemias Queta","BOS","C",26,76,25.3,4.3,6.6,1.6,2.3,0.0,8.4,1.7,0.8,1.3,1.0,10.2],
+["Ausar Thompson","DET","SF",23,73,26.0,4.2,7.9,1.5,2.6,0.1,5.7,3.1,2.0,0.9,1.5,9.9],
+["Daniel Gafford","DAL","C",27,55,21.7,3.8,5.7,2.0,2.9,0.0,6.9,1.1,0.8,1.3,1.1,9.5],
+["Jay Huff","IND","C",27,82,21.0,3.5,7.5,1.0,1.2,1.5,4.0,1.5,0.5,1.9,0.9,9.5],
+["Davion Mitchell","MIA","PG",27,70,28.6,3.7,7.6,0.6,0.9,1.3,2.7,6.5,1.0,0.2,1.5,9.3],
+["Isaiah Hartenstein","OKC","C",27,47,24.2,3.9,6.3,1.4,2.2,0.0,9.4,3.5,1.0,0.8,1.7,9.2],
+["Cason Wallace","OKC","SG",22,77,26.6,3.3,7.6,0.7,0.9,1.3,3.1,2.6,1.9,0.4,0.9,8.6],
+["Draymond Green","GSW","PF",35,68,27.5,3.0,7.2,0.9,1.2,1.5,5.5,5.5,0.9,0.6,2.7,8.4],
+["Moussa Diabaté","CHO","C",24,73,26.0,3.1,5.0,1.6,2.4,0.0,8.7,1.9,0.8,1.0,1.0,7.9],
+["Kris Dunn","LAC","PG",31,82,27.2,2.8,5.8,0.8,1.0,1.0,3.3,3.6,1.6,0.2,1.4,7.3],
+["Mitchell Robinson","BOS","C",27,60,19.6,2.5,3.4,0.7,1.7,0.0,8.8,0.9,0.9,1.2,0.7,5.7,"Neu bei BOS"],
+["Tyrese Haliburton","IND","PG",26,0,33.6,6.9,14.9,1.8,2.1,3.0,3.5,9.2,1.4,0.7,1.6,18.6,"Ungefähre Werte 24/25, 25/26 verletzt verpasst"],
+["Kyrie Irving","DAL","PG",34,0,36.1,9.2,19.2,3.6,4.0,2.9,4.8,4.6,1.3,0.5,2.2,24.7,"Ungefähre Werte 24/25, Kreuzbandriss, laut Team ohne Einschränkungen"],
+["Damian Lillard","POR","PG",36,0,36.1,8.0,17.9,6.0,6.6,3.3,4.7,7.1,1.2,0.2,2.9,24.9,"Ungefähre Werte 24/25, Rückkehr nach Achillessehnenriss"]
+];
+
+const CATS=[{k:"pts",l:"PTS"},{k:"reb",l:"REB"},{k:"ast",l:"AST"},{k:"stl",l:"STL"},{k:"blk",l:"BLK"},{k:"tpm",l:"3PM"},{k:"fg",l:"FG%"},{k:"ft",l:"FT%"},{k:"to",l:"TO"}];
+const POS=["Alle","PG","SG","SF","PF","C"];
+const KEY="fb-draft-v1";
+const DEF={teams:12,pos:1,rounds:13,off:[],risk:true,picks:[]};
+
+let S;
+try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){S=Object.assign({},DEF)}
+if(!Array.isArray(S.picks))S.picks=[];
+if(!Array.isArray(S.off))S.off=[];
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+const P=DATA.map(r=>({id:r[0],name:r[0],team:r[1],pos:r[2],age:r[3],g:r[4],mp:r[5],fgm:r[6],fga:r[7],ftm:r[8],fta:r[9],tpm:r[10],reb:r[11],ast:r[12],stl:r[13],blk:r[14],tov:r[15],pts:r[16],note:r[17]||""}));
+const byId=new Map(P.map(p=>[p.id,p]));
+
+(function computeZ(){
+  let a=0,b=0,c=0,d=0;
+  P.forEach(p=>{a+=p.fgm;b+=p.fga;c+=p.ftm;d+=p.fta});
+  const lf=a/b,lt=c/d;
+  P.forEach(p=>{p.raw={pts:p.pts,reb:p.reb,ast:p.ast,stl:p.stl,blk:p.blk,tpm:p.tpm,fg:p.fgm-p.fga*lf,ft:p.ftm-p.fta*lt,to:-p.tov};p.z={}});
+  CATS.forEach(({k})=>{
+    const v=P.map(p=>p.raw[k]);
+    const m=v.reduce((x,y)=>x+y,0)/v.length;
+    const sd=Math.sqrt(v.reduce((x,y)=>x+(y-m)**2,0)/v.length)||1;
+    P.forEach(p=>{p.z[k]=(p.raw[k]-m)/sd});
+  });
+})();
+
+const esc=s=>String(s).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const active=()=>CATS.filter(c=>!S.off.includes(c.k));
+const gf=p=>!S.risk?1:(p.g>0?0.7+0.3*Math.min(p.g,70)/70:0.85);
+const val=p=>active().reduce((s,c)=>s+p.z[c.k],0)*gf(p);
+const drafted=()=>new Set(S.picks.filter(x=>x.id).map(x=>x.id));
+const myPlayers=()=>S.picks.filter(x=>x.mine&&x.id&&byId.has(x.id)).map(x=>byId.get(x.id));
+const total=()=>S.teams*S.rounds;
+function slot(n){const N=S.teams,r=Math.ceil(n/N),i=n-(r-1)*N;return r%2?i:N+1-i}
+function mineFrom(n){for(let k=n;k<=total();k++)if(slot(k)===S.pos)return k;return null}
+function teamTotals(){const T={};CATS.forEach(c=>T[c.k]=0);myPlayers().forEach(p=>CATS.forEach(c=>T[c.k]+=p.z[c.k]));return T}
+function needs(){
+  const A=active(),W={};A.forEach(c=>W[c.k]=0);
+  if(myPlayers().length<2)return W;
+  const T=teamTotals(),v=A.map(c=>T[c.k]);
+  const m=v.reduce((a,b)=>a+b,0)/v.length;
+  const sd=Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/v.length)+0.5;
+  A.forEach(c=>W[c.k]=Math.max(-1.5,Math.min(1.5,(m-T[c.k])/sd)));
+  return W;
+}
+const fit=(p,W)=>active().reduce((s,c)=>s+p.z[c.k]*(1+0.25*(W[c.k]||0)),0)*gf(p);
+function show(p,k){
+  if(k==="fg")return p.fga?(p.fgm/p.fga*100).toFixed(1):"-";
+  if(k==="ft")return p.fta?(p.ftm/p.fta*100).toFixed(1):"-";
+  if(k==="to")return p.tov.toFixed(1);
+  return p[k].toFixed(1);
+}
+function state(){
+  const cur=S.picks.length+1,done=cur>total();
+  const myTurn=!done&&slot(cur)===S.pos;
+  const next=done?null:mineFrom(cur);
+  const after=next?mineFrom(next+1):null;
+  return{cur,done,myTurn,next,after,round:done?S.rounds:Math.ceil(cur/S.teams),inRound:done?S.teams:cur-(Math.ceil(cur/S.teams)-1)*S.teams};
+}
+
+/* ---------- Rendering ---------- */
+function renderClock(){
+  const st=state(),el=document.getElementById("clock");
+  let turn;
+  if(st.done)turn=`<div class="turn">Draft abgeschlossen</div>`;
+  else if(st.myTurn)turn=`<div class="turn go">Du bist dran!</div>`;
+  else{const n=st.next-st.cur;turn=`<div class="turn">Noch ${n} ${n===1?"Pick":"Picks"} bis zu dir (Pick ${st.next})</div>`}
+  let strip="";
+  if(!st.done){
+    const r=st.round,start=(r-1)*S.teams+1;
+    for(let k=start;k<start+S.teams;k++){
+      const cls=[k<st.cur?"past":"",k===st.cur?"now":"",slot(k)===S.pos?"me":""].join(" ");
+      strip+=`<span class="${cls}" title="Pick ${k}"></span>`;
+    }
+  }
+  el.innerHTML=`<div class="clock-in">
+    <div class="pickno"><span class="lbl">Pick</span><span class="num">${st.done?total():st.cur}</span></div>
+    <div class="clock-meta">
+      <div class="rd">Runde ${st.round} von ${S.rounds}, Pick ${st.inRound} in der Runde, du pickst an Position ${S.pos}</div>
+      ${turn}
+      <div class="strip" aria-hidden="true">${strip}</div>
+    </div>
+    <div><button class="btn-clock" id="undo" type="button" ${S.picks.length?"":"disabled"}>Letzten Pick zurücknehmen</button></div>
+  </div>`;
+  document.getElementById("undo").onclick=()=>{S.picks.pop();save();renderAll()};
+}
+
+let SAMPLE=null,aiText="";
+function renderRecos(){
+  const st=state(),el=document.getElementById("recos");
+  const taken=drafted(),avail=P.filter(p=>!taken.has(p.id));
+  const byVal=[...avail].sort((a,b)=>val(b)-val(a));
+  const rankOf=new Map(byVal.map((p,i)=>[p.id,i]));
+  const W=needs();
+  let title,sub,pool,between=0;
+  if(st.done){el.innerHTML=`<h2>Draft abgeschlossen</h2><p class="muted">Dein Team steht rechts. Viel Erfolg in der Saison!</p>`;return}
+  if(st.myTurn){
+    title="Deine besten Optionen jetzt";
+    between=st.after?st.after-st.cur-1:0;
+    sub=st.after?`Nach diesem Pick kommen ${between} andere Picks, bevor du wieder dran bist.`:"Das ist dein letzter Pick.";
+    pool=avail;
+  }else{
+    const ahead=st.next-st.cur;
+    title=`Prognose für deinen Pick ${st.next}`;
+    sub=`Vor dir sind noch ${ahead} Picks. Die ${ahead} stärksten Spieler rechne ich als weg, das hier bleibt voraussichtlich für dich übrig:`;
+    const gone=new Set(byVal.slice(0,ahead).map(p=>p.id));
+    pool=avail.filter(p=>!gone.has(p.id));
+  }
+  const top=[...pool].sort((a,b)=>fit(b,W)-fit(a,W)).slice(0,3);
+  const cards=top.map((p,i)=>{
+    const A=active();
+    const plus=A.map(c=>({c,s:p.z[c.k]*(1+0.25*(W[c.k]||0))})).filter(x=>x.s>0.4).sort((a,b)=>b.s-a.s).slice(0,3).map(x=>x.c.l);
+    const minus=A.map(c=>({c,z:p.z[c.k]})).filter(x=>x.z<-0.6).sort((a,b)=>a.z-b.z).slice(0,2).map(x=>x.c.l);
+    const risky=st.myTurn&&rankOf.get(p.id)<between;
+    return `<div class="card ${i===0?"first":""}">
+      <div class="nm">${esc(p.name)}</div>
+      <div class="small muted">${p.team}, ${p.pos}, Wert ${val(p).toFixed(1)}${p.g?`, ${p.g} Spiele`:""}</div>
+      ${plus.length?`<div class="why">Stark bei <b>${plus.join(", ")}</b></div>`:""}
+      ${minus.length?`<div class="why">Schwach bei <span class="w">${minus.join(", ")}</span></div>`:""}
+      ${p.note?`<div class="small" style="color:var(--bad)">${esc(p.note)}</div>`:""}
+      ${risky?`<span class="tag">Kommt nicht zurück</span>`:""}
+      ${st.myTurn?`<button class="btn primary" data-mine="${esc(p.id)}" type="button">${esc(p.name.split(" ").slice(-1)[0])} draften</button>`:""}
+    </div>`;
+  }).join("");
+  el.innerHTML=`<div class="recos-head"><div><h2>${title}</h2><p class="muted small" style="margin:0">${sub}</p></div>
+    ${SAMPLE?`<button class="btn ask" id="ask" type="button">Claude um Rat fragen</button>`:""}</div>
+    <div class="cards">${cards||`<p class="empty">Keine Spieler mehr in der Liste. Trag weitere Picks unten ein.</p>`}</div>
+    <div class="ai ${aiText?"show":""}" id="ai">${esc(aiText)}</div>`;
+  const ask=document.getElementById("ask");if(ask)ask.onclick=askClaude;
+}
+
+let limit=60;
+const ui={q:"",pos:"Alle",sort:"fit"};
+function renderList(){
+  const st=state(),taken=drafted(),W=needs(),A=new Set(active().map(c=>c.k));
+  let rows=P.filter(p=>!taken.has(p.id));
+  if(ui.pos!=="Alle")rows=rows.filter(p=>p.pos===ui.pos);
+  const q=ui.q.trim().toLowerCase();
+  if(q)rows=rows.filter(p=>(p.name+" "+p.team).toLowerCase().includes(q));
+  const score=ui.sort==="fit"?(p=>fit(p,W)):val;
+  rows.sort((a,b)=>score(b)-score(a));
+  const shown=rows.slice(0,limit);
+  document.getElementById("more").style.display=rows.length>limit?"":"none";
+  document.getElementById("list").innerHTML=shown.length?shown.map((p,i)=>{
+    const cells=CATS.map(c=>{
+      const z=p.z[c.k],a=Math.min(55,Math.abs(z)*20).toFixed(0);
+      return `<span class="c ${A.has(c.k)?"":"off"}" style="--tone:var(${z>=0?"--good":"--bad"});--a:${a}%"><i>${c.l}</i>${show(p,c.k)}</span>`;
+    }).join("");
+    return `<div class="row">
+      <div class="rk">${i+1}</div>
+      <div class="who"><b>${esc(p.name)}</b><span>${p.team}, ${p.pos}, ${p.g?p.g+" Spiele":"25/26 verpasst"}${p.note?` <em>${esc(p.note)}</em>`:""}</span></div>
+      <div class="stats">${cells}</div>
+      <div class="val" title="Gesamtwert">${score(p).toFixed(1)}</div>
+      <div class="act">
+        <button class="btn ${st.myTurn?"primary":""}" data-mine="${esc(p.id)}" type="button">Mein Pick</button>
+        <button class="btn ghost" data-gone="${esc(p.id)}" type="button">Weg</button>
+      </div>
+    </div>`;
+  }).join(""):`<p class="empty">Kein Spieler passt zur Suche.</p>`;
+}
+
+function renderTeam(){
+  const mine=S.picks.map((x,i)=>({...x,no:i+1})).filter(x=>x.mine);
+  const T=teamTotals(),A=new Set(active().map(c=>c.k));
+  const max=Math.max(3,...CATS.map(c=>Math.abs(T[c.k])));
+  const bars=CATS.map(c=>{
+    const v=T[c.k],w=Math.abs(v)/max*50;
+    const style=v>=0?`left:50%;width:${w}%;background:var(--good)`:`right:50%;width:${w}%;background:var(--bad)`;
+    return `<div class="bar ${A.has(c.k)?"":"off"}"><span>${c.l}</span><div class="track"><div class="fill" style="${style}"></div></div><span class="n">${v>=0?"+":""}${v.toFixed(1)}</span></div>`;
+  }).join("");
+  document.getElementById("team").innerHTML=`<h2>Dein Team (${mine.length}/${S.rounds})</h2>
+    ${mine.length?`<ul class="roster">${mine.map(x=>{const p=byId.get(x.id);return `<li><b>${esc(x.name)}</b><span>${p?p.team+", "+p.pos:"eigener Eintrag"}, Pick ${x.no}</span></li>`}).join("")}</ul>`:`<p class="muted small">Noch niemand gedraftet. Deine Picks tauchen hier auf.</p>`}
+    <h2 style="font-size:1.15rem;margin-top:.6rem">Kategorien-Profil</h2>
+    <p class="muted small" style="margin:0 0 .5rem">Grün = Stärke, Rot = Baustelle. Die Empfehlungen gleichen Baustellen automatisch aus.</p>
+    <div class="bars">${bars}</div>`;
+}
+
+function renderLog(){
+  const items=S.picks.map((x,i)=>`<li class="${x.mine?"me":""}"><span class="no">#${i+1}</span><span>${esc(x.name)}${x.mine?" (du)":""}</span></li>`).reverse().join("");
+  document.getElementById("log").innerHTML=`<h2 style="font-size:1.15rem">Draft-Verlauf</h2>${items?`<ol>${items}</ol>`:`<p class="muted small">Sobald gepickt wird, erscheint hier jeder Pick.</p>`}`;
+}
+
+function renderSetup(){
+  const t=document.getElementById("s-teams"),p=document.getElementById("s-pos"),r=document.getElementById("s-rounds");
+  t.innerHTML=Array.from({length:9},(_,i)=>i+8).map(n=>`<option ${n===S.teams?"selected":""}>${n}</option>`).join("");
+  if(S.pos>S.teams)S.pos=S.teams;
+  p.innerHTML=Array.from({length:S.teams},(_,i)=>i+1).map(n=>`<option ${n===S.pos?"selected":""}>${n}</option>`).join("");
+  r.innerHTML=Array.from({length:8},(_,i)=>i+10).map(n=>`<option ${n===S.rounds?"selected":""}>${n}</option>`).join("");
+  document.getElementById("s-cats").innerHTML=CATS.map(c=>`<button type="button" class="chip ${S.off.includes(c.k)?"punt":"on"}" data-cat="${c.k}" aria-pressed="${!S.off.includes(c.k)}">${c.l}</button>`).join("");
+  document.getElementById("s-risk").checked=!!S.risk;
+  document.getElementById("posf").innerHTML=POS.map(x=>`<button type="button" class="chip ${ui.pos===x?"on":""}" data-pos="${x}">${x}</button>`).join("");
+}
+
+function renderAll(){renderSetup();renderClock();renderRecos();renderList();renderTeam();renderLog()}
+
+/* ---------- Aktionen ---------- */
+function pick(id,mine){
+  if(S.picks.some(x=>x.id===id))return;
+  const p=byId.get(id);if(!p)return;
+  S.picks.push({id,name:p.name,mine});aiText="";save();renderAll();
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.mine)pick(b.dataset.mine,true);
+  else if(b.dataset.gone)pick(b.dataset.gone,false);
+  else if(b.dataset.cat){const k=b.dataset.cat;S.off=S.off.includes(k)?S.off.filter(x=>x!==k):[...S.off,k];save();renderAll()}
+  else if(b.dataset.pos){ui.pos=b.dataset.pos;limit=60;renderSetup();renderList()}
+});
+document.getElementById("s-teams").onchange=e=>{S.teams=+e.target.value;save();renderAll()};
+document.getElementById("s-pos").onchange=e=>{S.pos=+e.target.value;save();renderAll()};
+document.getElementById("s-rounds").onchange=e=>{S.rounds=+e.target.value;save();renderAll()};
+document.getElementById("s-risk").onchange=e=>{S.risk=e.target.checked;save();renderAll()};
+document.getElementById("q").oninput=e=>{ui.q=e.target.value;renderList()};
+document.getElementById("sort").onchange=e=>{ui.sort=e.target.value;renderList()};
+document.getElementById("more").onclick=()=>{limit+=60;renderList()};
+let resetArmed=false;
+document.getElementById("reset").onclick=e=>{
+  if(!resetArmed){resetArmed=true;e.target.textContent="Wirklich alle Picks löschen?";setTimeout(()=>{resetArmed=false;e.target.textContent="Draft zurücksetzen"},4000);return}
+  S.picks=[];aiText="";resetArmed=false;e.target.textContent="Draft zurücksetzen";save();renderAll();
+};
+function addOther(mine){
+  const inp=document.getElementById("other-name"),name=inp.value.trim();
+  if(!name)return;
+  S.picks.push({id:null,name,mine});inp.value="";aiText="";save();renderAll();
+}
+document.getElementById("other-them").onclick=()=>addOther(false);
+document.getElementById("other-me").onclick=()=>addOther(true);
+
+/* ---------- Claude ---------- */
+function fmt(p){
+  const fg=p.fga?(p.fgm/p.fga*100).toFixed(1):"-",ft=p.fta?(p.ftm/p.fta*100).toFixed(1):"-";
+  return `${p.name} (${p.team}, ${p.pos}, ${p.age} J., ${p.g||"0"} Spiele 25/26): ${p.pts} PTS, ${p.reb} REB, ${p.ast} AST, ${p.stl} STL, ${p.blk} BLK, ${p.tpm} 3PM, FG ${fg}%, FT ${ft}%, ${p.tov} TO, Wert ${val(p).toFixed(1)}${p.note?"; Hinweis: "+p.note:""}`;
+}
+async function askClaude(){
+  if(!SAMPLE)return;
+  const st=state(),taken=drafted(),W=needs(),T=teamTotals();
+  const avail=P.filter(p=>!taken.has(p.id)).sort((a,b)=>fit(b,W)-fit(a,W)).slice(0,15);
+  const mine=myPlayers();
+  const punt=S.off.map(k=>CATS.find(c=>c.k===k).l);
+  const prompt=`Du bist ein erfahrener Fantasy-Basketball-Experte. Liga: Yahoo, Head-to-Head mit 9 Kategorien (PTS, REB, AST, STL, BLK, 3PM, FG%, FT%, TO), ${S.teams} Teams, Snake-Draft, ${S.rounds} Runden. Ich picke an Position ${S.pos}.
+Stand: Gesamtpick ${st.cur}. ${st.myTurn?`Ich bin jetzt dran. Mein nächster Pick danach ist ${st.after||"keiner mehr"}.`:`Mein nächster Pick ist Nummer ${st.next}.`}
+${punt.length?`Diese Kategorien opfere ich bewusst (Punt): ${punt.join(", ")}.`:"Ich punte keine Kategorie."}
+Mein Team bisher: ${mine.length?mine.map(fmt).join(" | "):"noch leer"}.
+Kategorien-Summe meines Teams (Z-Scores): ${CATS.map(c=>c.l+" "+T[c.k].toFixed(1)).join(", ")}.
+Beste verfügbare Spieler laut meinem Modell: ${avail.map(fmt).join(" | ")}.
+Die Stats sind aus der Saison 2025-26 (pro Spiel), Teams schon nach den Sommer-Transfers.
+Sag mir, wen ich ${st.myTurn?"jetzt":"bei meinem nächsten Pick"} nehmen soll und warum, und nenne eine Alternative. Achte auf Verletzungsrisiko, neue Rollen nach Teamwechseln und die Balance meiner Kategorien. Antworte auf Deutsch, locker und direkt, höchstens 6 Sätze, keine Aufzählungszeichen, keine Überschriften.`;
+  const btn=document.getElementById("ask"),box=document.getElementById("ai");
+  btn.disabled=true;btn.textContent="Claude überlegt…";
+  box.classList.add("show");box.textContent="Denkt nach…";
+  try{
+    const res=await SAMPLE(prompt,{cache:false,onText:({text})=>{box.textContent=text}});
+    aiText=res.text;box.textContent=aiText;
+  }catch(err){
+    if(err&&err.code==="not_granted"){SAMPLE=null;box.textContent="Ohne Freigabe kann Claude hier nicht antworten. Die Empfehlungen oben funktionieren trotzdem.";}
+    else if(err&&err.code==="rate_limited"){box.textContent="Gerade zu viele Anfragen. Versuch es in einer Minute noch mal.";}
+    else{box.textContent=(err&&err.text)||"Claude ist gerade nicht erreichbar. Versuch es gleich noch mal.";}
+  }finally{
+    const b=document.getElementById("ask");if(b){b.disabled=false;b.textContent="Claude um Rat fragen"}
+  }
+}
+
+if(!S.picks.length)document.getElementById("setup").open=true;
+renderAll();
+(async()=>{try{if(window.claude&&typeof window.claude.use==="function"){const s=await window.claude.use("sample");if(s){SAMPLE=s;renderRecos()}}}catch(e){}})();
+</script>
+</body>
+</html>
