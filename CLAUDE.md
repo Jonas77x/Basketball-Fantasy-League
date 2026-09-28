@@ -1,6 +1,6 @@
 # CLAUDE.md – Projektregeln
 
-Persönlicher Fantasy-Basketball-Assistent für Jonas (Yahoo, private H2H-Kategorien-Liga, eine Liga, keine Keeper).
+Persönlicher Fantasy-Basketball-Assistent für Jonas (Yahoo, private H2H-Kategorien-Liga, Liga-ID 60530, eine Liga, keine Keeper).
 Jonas programmiert nicht. Claude plant, baut, testet und deployt. Der Plan steht in `PLAN.md`.
 
 ## Kommunikation

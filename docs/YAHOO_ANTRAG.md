@@ -47,10 +47,10 @@
 | Expected Users | **Small (< 1,000 users)** |
 | Client ID | die Client ID aus Schritt 2 |
 
-**Describe Your Intended Use Case** (Text kopieren, Liga-ID einsetzen):
+**Describe Your Intended Use Case** (Text kopieren, Liga-ID ist schon eingesetzt):
 
 ```
-Private, non-commercial tool used only by me (1 user) for my own Yahoo Fantasy Basketball league (one private league, league ID [DEINE LIGA-ID], 2026-27 season, head-to-head categories). It runs on my own PC and later on a small private server; nobody else has access. Data needed (read only): my league's settings (stat categories, roster positions, transaction limits, playoff weeks, waiver rules), the draft results during our live draft on October 19, 2026 (to show draft recommendations next to the Yahoo draft room), team rosters, weekly matchups and scoreboard, standings, league transactions, and player info, status, ownership and stats. Purpose: draft recommendations, daily lineup suggestions, waiver/streaming suggestions and trade analysis for my own team. No data is resold, published or shared. Expected volume: a few hundred requests per day with caching; during the roughly 2-hour live draft about one request every 5 seconds. Attribution "Fantasy data provided by Yahoo Fantasy" is shown in the app.
+Private, non-commercial tool used only by me (1 user) for my own Yahoo Fantasy Basketball league (one private league, league ID 60530, 2026-27 season, head-to-head categories). It runs on my own PC and later on a small private server; nobody else has access. Data needed (read only): my league's settings (stat categories, roster positions, transaction limits, playoff weeks, waiver rules), the draft results during our live draft on October 19, 2026 (to show draft recommendations next to the Yahoo draft room), team rosters, weekly matchups and scoreboard, standings, league transactions, and player info, status, ownership and stats. Purpose: draft recommendations, daily lineup suggestions, waiver/streaming suggestions and trade analysis for my own team. No data is resold, published or shared. Expected volume: a few hundred requests per day with caching; during the roughly 2-hour live draft about one request every 5 seconds. Attribution "Fantasy data provided by Yahoo Fantasy" is shown in the app.
 ```
 
 **Additional Notes** (Text kopieren):
