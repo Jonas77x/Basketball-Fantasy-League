@@ -11,6 +11,8 @@
   </div>
   {% endif %}
   <div id="toast" class="toast">{{ message }}</div>
+  <input type="hidden" id="board-version" name="v" value="{{ v.version }}">
+  <div hx-get="/draft/{{ v.kind }}/refresh" hx-trigger="every 4s" hx-include="#board-version,#pool-filters" hx-swap="none"></div>
 
   <details class="setup panel" {% if not v.clock.has_picks %}open{% endif %}>
     <summary>Liga-Einstellungen</summary>
@@ -51,6 +53,7 @@
                  hx-target="#quick-results" hx-swap="innerHTML" aria-label="Spieler suchen">
         </div>
         <div class="results" id="quick-results"></div>
+        {% if v.kind == "live" %}{% include "draft/_sync.html" %}{% endif %}
         <p class="kbd">Ein paar Buchstaben reichen. Die wahrscheinlichsten Picks stehen oben. ↑/↓ wählen, Enter trägt den Pick für das Team ein, das gerade dran ist.</p>
       </section>
 

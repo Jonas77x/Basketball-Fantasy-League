@@ -1,0 +1,20 @@
+<div id="sync-box" class="sync"{% if sync.connected %} hx-get="/draft/live/sync/status" hx-trigger="every 4s" hx-swap="outerHTML"{% endif %}>
+  {% if not sync.connected %}
+    <span class="dot"></span>
+    <span class="muted">Yahoo-Live-Sync: noch nicht verbunden. Picks bitte von Hand eintragen. <a href="/yahoo">Yahoo einrichten</a></span>
+  {% elif sync.running %}
+    <span class="dot {{ 'err' if sync.error else 'on' }}"></span>
+    <span>
+      <b>Yahoo-Live-Sync aktiv</b>
+      {% if sync.draft_status == "predraft" %}· Draft hat noch nicht begonnen{% else %}· {{ sync.picks_made }} Picks übernommen{% endif %}
+      {% if sync.ago is not none %}· letzte Abfrage vor {{ sync.ago }} s{% endif %}
+      {% if sync.error %}<br><span class="err-text">{{ sync.error }} Picks im Zweifel von Hand eintragen.</span>{% endif %}
+      {% if sync.unmatched %}<br><span class="muted small">Ohne Projektion: {{ sync.unmatched|join(", ") }}</span>{% endif %}
+    </span>
+    <button class="btn" type="button" hx-post="/draft/live/sync/stop" hx-target="#sync-box" hx-swap="outerHTML">Stoppen</button>
+  {% else %}
+    <span class="dot{{ ' err' if sync.error }}"></span>
+    <span>Yahoo-Live-Sync aus.{% if sync.error %} <span class="err-text">{{ sync.error }}</span>{% endif %}</span>
+    <button class="btn primary" type="button" hx-post="/draft/live/sync/start" hx-target="#sync-box" hx-swap="outerHTML">Live-Sync starten</button>
+  {% endif %}
+</div>

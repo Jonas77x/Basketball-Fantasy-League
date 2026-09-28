@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% set active = "yahoo" %}
+{% block title %}Yahoo · Fantasy-Assistent{% endblock %}
+{% block body %}
+<main class="wrap" style="max-width:980px">
+  <h2 style="font-size:2rem;margin-top:.4rem">Yahoo-Verbindung</h2>
+  {% if msg %}<div class="banner">{{ msg }}</div>{% endif %}
+  {% if error %}<div class="toast">{{ error }}</div>{% endif %}
+
+  <section class="panel">
+    <ol class="steps">
+      <li class="{{ 'done' if configured }}">
+        <b>Zugangsdaten in der .env-Datei</b>
+        {% if configured %}
+          <div class="muted small">YAHOO_CLIENT_ID und YAHOO_CLIENT_SECRET sind eingetragen.</div>
+        {% else %}
+          <div class="small">Trag die Client ID und das Client Secret deiner Yahoo-App in die Datei <code>.env</code> im Projektordner ein
+          (<code>YAHOO_CLIENT_ID=…</code>, <code>YAHOO_CLIENT_SECRET=…</code>) und starte den Assistenten neu.
+          Wie du die App anlegst: <code>docs/YAHOO_ANTRAG.md</code>. Wichtig: Yahoo muss deinen Antrag erst freigeben, sonst meldet Yahoo „nicht autorisiert“.</div>
+        {% endif %}
+      </li>
+
+      <li class="{{ 'done' if connected }}">
+        <b>Mit Yahoo verbinden</b>
+        {% if connected %}
+          <div class="muted small">Verbunden. Der Zugang wird automatisch erneuert.</div>
+          <form method="post" action="/yahoo/disconnect" style="margin-top:.4rem"><button class="btn" type="submit">Trennen</button></form>
+        {% elif configured %}
+          <div class="small">
+            1. Klick auf <a class="btn primary" href="/yahoo/login" target="_blank" rel="noopener">Bei Yahoo anmelden</a> (öffnet einen neuen Tab).<br>
+            2. Melde dich bei Yahoo an und klick auf <b>Zulassen</b> / <b>Agree</b>.<br>
+            3. Danach landest du auf einer Fehlerseite („Diese Website ist nicht erreichbar“) – <b>das ist normal</b>.
+               Kopier die komplette Adresse aus der Adresszeile (sie beginnt mit <code>{{ redirect_uri }}</code>) und füge sie hier ein:
+          </div>
+          <form method="post" action="/yahoo/connect" style="margin-top:.5rem">
+            <textarea class="paste" name="pasted" rows="2" placeholder="https://localhost:8000/auth/callback?code=…&state=…"></textarea>
+            <button class="btn primary" type="submit" style="margin-top:.4rem">Verbindung herstellen</button>
+          </form>
+        {% else %}
+          <div class="muted small">Erst Schritt 1 erledigen.</div>
+        {% endif %}
+      </li>
+
+      <li class="{{ 'done' if info.settings }}">
+        <b>Liga synchronisieren</b>
+        <div class="small">Aktive Liga: <code>{{ league_key or "keine – YAHOO_LEAGUE_ID in der .env setzen" }}</code>
+          {% if info.league.name %} ({{ info.league.name }}){% endif %}</div>
+        {% if connected %}
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
+            <form method="post" action="/yahoo/sync"><button class="btn primary" type="submit" {% if job.running %}disabled{% endif %}>Liga jetzt synchronisieren</button></form>
+            <form method="post" action="/yahoo/leagues"><button class="btn" type="submit">Meine Ligen anzeigen</button></form>
+          </div>
+          {% include "_job.html" %}
+          {% if user_leagues %}
+          <form method="post" action="/yahoo/league" style="margin-top:.6rem">
+            <div class="muted small">Welche Liga soll der Assistent verwenden? (Für die Generalprobe kannst du vorübergehend eine öffentliche Liga wählen.)</div>
+            {% for lg in user_leagues %}
+            <label class="check"><input type="radio" name="league_key" value="{{ lg.league_key }}" {% if lg.league_key == league_key %}checked{% endif %}>
+              <span>{{ lg.name }} · {{ lg.num_teams }} Teams · Draft-Status {{ lg.draft_status }} · <code>{{ lg.league_key }}</code></span></label>
+            {% endfor %}
+            <button class="btn" type="submit" style="margin-top:.3rem">Diese Liga verwenden</button>
+          </form>
+          {% endif %}
+        {% endif %}
+      </li>
+
+      <li class="{{ 'done' if sync.running }}">
+        <b>Live-Draft mitlesen</b>
+        <div class="small">Am Draft-Abend im Draft-Raum auf <b>Live-Sync starten</b> klicken (am besten ein paar Minuten vor Beginn).
+          Der Assistent fragt Yahoo dann alle 3–10 Sekunden nach neuen Picks – öfter, wenn du bald dran bist – und trägt sie automatisch ein.
+          Klappt etwas nicht, trägst du einfach wie gewohnt von Hand weiter ein.</div>
+        {% if connected %}{% include "draft/_sync.html" %}{% endif %}
+      </li>
+    </ol>
+  </section>
+
+  {% if info.settings %}
+  {% set s = info.settings %}
+  <section class="panel">
+    <h2>Deine Liga: {{ s.name }}</h2>
+    {% if s.unsupported_categories %}
+    <p class="toast">Achtung: Diese Kategorien kann der Assistent noch nicht bewerten: {{ s.unsupported_categories|join(", ") }}. Sag mir Bescheid, dann baue ich sie ein.</p>
+    {% endif %}
+    <dl class="kv">
+      <dt>Saison</dt><dd>{{ s.season }}-{{ (s.season|int + 1) % 100 }} · {{ s.start_date }} bis {{ s.end_date }}</dd>
+      <dt>Teams</dt><dd>{{ s.num_teams }}</dd>
+      <dt>Draft</dt><dd>{{ "Auktion" if s.is_auction else "Snake" }} ({{ s.draft_type }}){% if s.draft_time_display %} · {{ s.draft_time_display }} Uhr{% endif %}{% if s.draft_pick_time %} · {{ s.draft_pick_time }} s pro Pick{% endif %} · Status {{ s.draft_status }}</dd>
+      <dt>Kategorien</dt><dd>{{ s.categories|map("upper")|join(", ") }}</dd>
+      <dt>Kader</dt><dd>{{ s.roster|join(", ") }}</dd>
+      <dt>Wechsel-Limit</dt><dd>{% if s.max_weekly_adds %}{{ s.max_weekly_adds }} pro Woche{% else %}keins pro Woche{% endif %}{% if s.max_adds %} · {{ s.max_adds }} pro Saison{% endif %}</dd>
+      <dt>Waiver</dt><dd>{{ s.waiver_type }}{% if s.waiver_time %} · {{ s.waiver_time }} Tag(e) auf Waivers{% endif %}{% if s.uses_faab %} · mit FAAB-Budget{% endif %}</dd>
+      <dt>Playoffs</dt><dd>{% if s.uses_playoff %}Top {{ s.num_playoff_teams }} ab Woche {{ s.playoff_start_week }}{% else %}keine{% endif %}</dd>
+      <dt>Trades</dt><dd>bis {{ s.trade_end_date or "–" }} · Genehmigung: {{ s.trade_ratify_type }}</dd>
+    </dl>
+    {% if info.teams %}
+    <h3>Teams und Draft-Reihenfolge</h3>
+    <table class="plain">
+      <tr><th>Pos.</th><th>Team</th><th>Manager</th></tr>
+      {% for t in teams_sorted %}
+      <tr{% if t.is_mine %} style="font-weight:600"{% endif %}><td>{{ t.draft_position or "–" }}</td><td>{{ t.name }}{% if t.is_mine %} (du){% endif %}</td><td>{{ t.manager }}</td></tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+    <p class="muted small">Diese Einstellungen wurden in den Draft-Assistenten übernommen (Teams, deine Position, Runden, Kategorien, Kaderplätze).</p>
+  </section>
+  {% endif %}
+
+  {% if logs %}
+  <section class="panel">
+    <h2>Protokoll</h2>
+    <p class="muted small">Jede Abfrage beim Live-Draft wird hier festgehalten. So sehen wir nach der Generalprobe, ob Yahoo die Picks wirklich live liefert.</p>
+    <table class="plain">
+      {% for r in logs %}<tr><td class="muted" style="white-space:nowrap">{{ r.time }}</td><td class="{{ 'ok' if r.ok else 'bad' }}">{{ r.message }}</td></tr>{% endfor %}
+    </table>
+  </section>
+  {% endif %}
+</main>
+{% endblock %}

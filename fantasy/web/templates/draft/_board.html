@@ -4,3 +4,4 @@
 {% include "draft/_pool.html" %}
 {% include "draft/_side.html" %}
 <div id="toast" class="toast" hx-swap-oob="true">{{ message }}</div>
+<input type="hidden" id="board-version" name="v" value="{{ v.version }}" hx-swap-oob="true">

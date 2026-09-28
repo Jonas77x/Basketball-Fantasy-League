@@ -2,13 +2,14 @@
 
 Dein persönlicher Assistent für deine Yahoo-Fantasy-Basketball-Liga (Head-to-Head nach Kategorien).
 
-**Stand: Phase 1 – Draft-Assistent.** Was als Nächstes kommt, steht in [`PLAN.md`](PLAN.md).
+**Stand: Phase 2 – Draft-Assistent + Yahoo-Anbindung (nur lesen).** Was als Nächstes kommt, steht in [`PLAN.md`](PLAN.md).
 
 | Was geht schon? | Was kommt später? |
 |---|---|
-| Draft-Assistent mit Empfehlungen, Begründungen, Punt-Vorschlägen und Prognose, wer bis zu deinem Pick weg ist | Live-Mitlesen des Yahoo-Drafts (sobald Yahoo den API-Zugang freigibt) |
-| Übungs-Draft gegen simulierte Gegner | Team-Dashboard, Aufstellung, Waiver, Trades, News, Telegram |
-| Optional: „KI um Rat fragen“ | Server, damit alles rund um die Uhr läuft |
+| Draft-Assistent mit Empfehlungen, Begründungen, Punt-Vorschlägen und Prognose, wer bis zu deinem Pick weg ist | Team-Dashboard, Aufstellung, Waiver, Trades, News, Telegram |
+| Übungs-Draft gegen simulierte Gegner | Server, damit alles rund um die Uhr läuft |
+| Yahoo-Anbindung: Liga-Einstellungen übernehmen, Yahoo-ADP, Live-Draft automatisch mitlesen (sobald Yahoo deinen Antrag freigibt) | |
+| Optional: „KI um Rat fragen“ | |
 
 ---
 
@@ -21,7 +22,7 @@ Dein persönlicher Assistent für deine Yahoo-Fantasy-Basketball-Liga (Head-to-H
 6. [KI einrichten (optional)](#6-ki-einrichten-optional)
 7. [Updates holen](#7-updates-holen)
 8. [Häufige Probleme](#8-häufige-probleme)
-9. [Yahoo-API-Zugang](#9-yahoo-api-zugang)
+9. [Yahoo verbinden](#9-yahoo-verbinden)
 
 ---
 
@@ -115,14 +116,16 @@ Mo 19.10., 21:00 Uhr (in New York 15:00 Uhr).
 
 - [ ] **Am Nachmittag:** Doppelklick auf `daten-aktualisieren.bat` (holt die neueste Yahoo-ADP).
 - [ ] **Updates holen:** siehe Abschnitt 7, falls ich noch etwas verbessert habe.
-- [ ] **20:45 Uhr:**
+- [ ] **20:30 Uhr:**
   1. `start.bat` starten.
-  2. In den Liga-Einstellungen Teams, Draft-Position und Runden prüfen.
+  2. Mit Yahoo-Freigabe: Menü **Yahoo** → **Liga jetzt synchronisieren**. Das übernimmt Draft-Reihenfolge, Kategorien und Kaderplätze. Ohne Freigabe: in den Liga-Einstellungen Teams, Draft-Position und Runden selbst prüfen.
   3. Falls im echten Draft schon Test-Picks stehen: **Draft zurücksetzen**.
+  4. Mit Yahoo-Freigabe: im Draft-Raum auf **Live-Sync starten** klicken. Der grüne Punkt zeigt, dass es läuft.
 - [ ] **Fenster nebeneinander:** links der Yahoo-Draftraum, rechts der Assistent (Windows-Taste + ← / →).
-- [ ] **Während des Drafts:** jeden Pick der anderen kurz per Schnelleingabe eintragen (2–3 Buchstaben + Enter).
+- [ ] **Während des Drafts:**
+  - Mit Live-Sync erscheinen die Picks nach wenigen Sekunden von selbst.
+  - Ohne Live-Sync (oder falls er hängt) trägst du jeden Pick kurz per Schnelleingabe ein: 2–3 Buchstaben + Enter.
   - Bist du dran, stehen oben deine drei besten Optionen.
-  - Ab Phase 2 passiert das Eintragen automatisch, sobald Yahoo den API-Zugang freigibt.
 - [ ] **Tipp:** Stell in Yahoo deine Draft-Queue zusätzlich mit ein paar Wunschspielern voll, als Sicherheitsnetz, falls der PC hängt.
 
 ## 5. Daten aktualisieren
@@ -174,8 +177,39 @@ Die Meldung unter dem Knopf erklärt den Grund: Schlüssel fehlt, Guthaben leer 
 **Ich habe mich im Draft verklickt**
 **Letzten Pick zurücknehmen** (oben rechts), so oft wie nötig.
 
-## 9. Yahoo-API-Zugang
-Yahoo gibt seine Schnittstelle seit 2026 nur noch nach Antrag frei, und derzeit nur zum Lesen. Die Anleitung mit fertigen Texten steht in [`docs/YAHOO_ANTRAG.md`](docs/YAHOO_ANTRAG.md). Sobald die Freigabe da ist, baue ich das automatische Mitlesen ein (Phase 2).
+## 9. Yahoo verbinden
+Yahoo gibt seine Schnittstelle seit 2026 nur nach Antrag frei, und derzeit nur zum Lesen. Der Antrag ist beschrieben in [`docs/YAHOO_ANTRAG.md`](docs/YAHOO_ANTRAG.md). **Sobald Yahoo deinen Antrag freigegeben hat** (du bekommst eine E-Mail):
+
+1. **Schlüssel eintragen:**
+   1. Öffne die Datei `.env` im Projektordner mit dem Editor.
+   2. Trag die Client ID und das Client Secret deiner Yahoo-App ein:
+      ```
+      YAHOO_CLIENT_ID=dj0yJm…
+      YAHOO_CLIENT_SECRET=abc123…
+      ```
+   3. Speichern und `start.bat` neu starten.
+2. **Verbinden:**
+   1. Im Assistenten oben auf **Yahoo** klicken, dann auf **Bei Yahoo anmelden**. Es öffnet sich ein neuer Tab.
+   2. Bei Yahoo anmelden und **Zulassen** klicken.
+   3. Danach zeigt der Browser „Diese Website ist nicht erreichbar“. **Das ist normal.** Kopier die komplette Adresse aus der Adresszeile (sie beginnt mit `https://localhost:8000/auth/callback?code=`).
+   4. Füg die Adresse im Assistenten ins Feld ein und klick auf **Verbindung herstellen**.
+3. **Liga synchronisieren:** Auf **Liga jetzt synchronisieren** klicken. Das dauert etwa 20 Sekunden. Danach siehst du unter anderem:
+   - deine Liga-Einstellungen: Kategorien, Wechsel-Limit, Waiver-Regeln, Playoffs
+   - die Draft-Reihenfolge
+
+   Der Draft-Assistent übernimmt alles automatisch, dazu die aktuelle Yahoo-ADP und Yahoo-Positionen.
+4. **Am Draft-Abend** im Draft-Raum auf **Live-Sync starten** klicken.
+
+**Generalprobe (empfohlen, sobald die Freigabe da ist):** Ob Yahoo die Picks während eines Drafts wirklich live liefert, testen wir vor dem 19.10.
+1. Tritt bei Yahoo einer öffentlichen Basketball-Liga bei, deren Live-Draft bald stattfindet: Yahoo Fantasy → **Join a League** → **Public League** → eine mit Draft in den nächsten Stunden.
+2. Auf der Yahoo-Seite des Assistenten **Meine Ligen anzeigen** klicken, die öffentliche Liga auswählen und synchronisieren.
+3. Während deren Draft **Live-Sync starten**. Du musst dort nicht selbst draften, Autopick reicht.
+4. Danach auf der Yahoo-Seite das **Protokoll** anschauen (oder mir Bescheid geben). Wichtig ist, ob die Zahl der Picks von Abfrage zu Abfrage steigt.
+5. Zum Schluss wieder deine Liga **60530** auswählen, synchronisieren und im Draft-Raum **Draft zurücksetzen**.
+
+**Probleme:**
+- **„Yahoo hat den Zugriff abgelehnt (403)“:** Die Freigabe ist noch nicht da, oder die Verbindung stammt von vor der Freigabe. Auf der Yahoo-Seite **Trennen** klicken und neu verbinden.
+- **„Die Anmeldung wurde abgelehnt“ beim Verbinden:** Prüf, ob Client ID und Secret stimmen. Die Redirect-URI in deiner Yahoo-App muss genau `https://localhost:8000/auth/callback` lauten.
 
 ---
 

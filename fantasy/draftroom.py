@@ -1,6 +1,8 @@
 """Draft room service: persistence of the live and the practice draft, pick entry, practice opponents."""
 
+import hashlib
 import json
+from dataclasses import dataclass
 
 import numpy as np
 from sqlalchemy import select
@@ -11,6 +13,7 @@ from fantasy.engine import simulate
 from fantasy.engine.advisor import DraftAdvisor
 from fantasy.engine.draft import DraftPick, DraftSettings, DraftState, slot_for_pick
 from fantasy.players.catalog import get_catalog
+from fantasy.yahoo.league import overlay
 
 KINDS = ("live", "practice")
 
@@ -52,8 +55,23 @@ def state_of(draft: Draft) -> DraftState:
     return DraftState(settings_of(draft), picks)
 
 
+def players_for_draft() -> list:
+    """Our catalog, enriched with Yahoo ADP/positions/status once the league is synced."""
+    return overlay(list(get_catalog()))
+
+
 def advisor_for(draft: Draft) -> DraftAdvisor:
-    return DraftAdvisor(get_catalog(), settings_of(draft))
+    return DraftAdvisor(players_for_draft(), settings_of(draft))
+
+
+def version_of(draft: Draft) -> str:
+    """Changes whenever picks or settings change (used by the browser to refresh only when needed)."""
+    text = (
+        draft.settings_json
+        + "|"
+        + ";".join(f"{r.overall}:{r.player_id}:{r.name}:{r.mine}" for r in draft.picks)
+    )
+    return hashlib.sha1(text.encode()).hexdigest()[:16]
 
 
 class PickError(ValueError):
@@ -135,3 +153,49 @@ def simulate_opponents(session: Session, draft: Draft, seed: int | None = None) 
         i = simulate.pick_by_adp(advisor.adp_eff, available, rng)
         add_pick(session, draft, player_id=players[i].id, source="simulated")
         count += 1
+
+
+@dataclass
+class ExternalPick:
+    overall: int
+    slot: int
+    player_id: str | None
+    name: str
+    mine: bool
+
+
+def apply_external_picks(
+    session: Session, draft: Draft, picks: list[ExternalPick], source: str = "yahoo"
+) -> bool:
+    """Make Yahoo the source of truth: its picks replace ours; manual picks that Yahoo has not
+    reported yet (API delay) are kept behind them, renumbered. Returns True if anything changed."""
+    settings = settings_of(draft)
+    external: list[ExternalPick] = []
+    for pick in sorted(picks, key=lambda p: p.overall):
+        if pick.overall != len(external) + 1:
+            break  # only a gap-free sequence of picks is trustworthy
+        external.append(pick)
+    taken_ids = {p.player_id for p in external if p.player_id}
+    taken_names = {p.name for p in external}
+
+    desired = [(p.overall, p.slot, p.player_id, p.name, p.mine, source) for p in external]
+    for row in draft.picks:
+        if row.source == source or row.overall <= len(external):
+            continue
+        if (row.player_id and row.player_id in taken_ids) or (not row.player_id and row.name in taken_names):
+            continue
+        overall = len(desired) + 1
+        slot = slot_for_pick(overall, settings.teams)
+        desired.append((overall, slot, row.player_id, row.name, slot == settings.my_slot, row.source))
+
+    current = [(r.overall, r.slot, r.player_id, r.name, r.mine, r.source) for r in draft.picks]
+    if current == desired:
+        return False
+    draft.picks.clear()
+    session.flush()
+    for overall, slot, player_id, name, mine, src in desired:
+        draft.picks.append(
+            DraftPickRow(overall=overall, slot=slot, player_id=player_id, name=name, mine=mine, source=src)
+        )
+    session.flush()
+    return True

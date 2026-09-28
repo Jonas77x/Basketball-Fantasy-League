@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     yahoo_client_secret: str = ""
     yahoo_redirect_uri: str = "https://localhost:8000/auth/callback"
     yahoo_league_id: str = ""
+    # Optional OAuth scope (e.g. "fspt-r"). Leave empty: Yahoo then uses the permissions of the app.
+    yahoo_scope: str = ""
 
     @property
     def db_path(self) -> Path:
@@ -43,6 +45,10 @@ class Settings(BaseSettings):
     @property
     def cache_dir(self) -> Path:
         return self.data_dir / "cache"
+
+    @property
+    def yahoo_configured(self) -> bool:
+        return bool(self.yahoo_client_id.strip() and self.yahoo_client_secret.strip())
 
     @property
     def ai_enabled(self) -> bool:

@@ -1,0 +1,10 @@
+<div id="job-box"{% if job.running %} hx-get="/yahoo/job" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+  {% if job.running %}
+    <p><b>Synchronisiere …</b> Das dauert etwa 20 Sekunden (Yahoo wird bewusst langsam abgefragt).</p>
+  {% elif job.ok is sameas true %}
+    <p class="ok"><b>Fertig:</b> {{ job.message }}</p>
+    {% if polled %}<script>setTimeout(() => location.reload(), 1500)</script>{% endif %}
+  {% elif job.ok is sameas false %}
+    <p class="bad"><b>Fehler:</b> {{ job.message }}</p>
+  {% endif %}
+</div>

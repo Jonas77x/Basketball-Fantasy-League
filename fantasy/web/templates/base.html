@@ -16,8 +16,10 @@
   <span class="brand">Fantasy-Assistent</span>
   <a href="/draft?kind=live" class="{% if active == 'live' %}on{% endif %}">Draft</a>
   <a href="/draft?kind=practice" class="{% if active == 'practice' %}on{% endif %}">Übungs-Draft</a>
+  <a href="/yahoo" class="{% if active == 'yahoo' %}on{% endif %}">Yahoo</a>
   <span class="spacer"></span>
 </div></nav>
 {% block body %}{% endblock %}
+<p class="attribution"><a href="https://sports.yahoo.com/fantasy/" target="_blank" rel="noopener">Fantasy data provided by Yahoo Fantasy</a></p>
 </body>
 </html>

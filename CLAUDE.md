@@ -24,6 +24,10 @@ Jonas programmiert nicht. Claude plant, baut, testet und deployt. Der Plan steht
 - Richtwerte: normal ≤ 1 Request/s mit Cache-TTL je Ressource. Live-Draft: adaptiv alle 3–10 s.
 - Bei 403 „not authorized“ ist die App nicht freigegeben oder der Token hat alte Scopes. Lösung: neu verbinden (erneute Zustimmung), nicht nur den Token erneuern.
 - Pflicht-Hinweis in der Oberfläche: „Fantasy data provided by Yahoo Fantasy“ mit Link zu Yahoo Fantasy.
+- OAuth-Tokens liegen nur in der lokalen SQLite-DB (`var/`, nicht im Repo). Client ID/Secret nur in `.env`.
+- Aufbau: `yahoo/auth.py` (OAuth), `yahoo/client.py` (GET-only, zentral), `yahoo/api.py` (Endpunkte + Parser),
+  `yahoo/league.py` (Liga-Sync, Spieler-Zuordnung, Yahoo-ADP-Overlay), `yahoo/draftsync.py` (Live-Draft-Poller).
+- Tests nutzen `tests/yahoo_fakes.FakeClient` mit XML-Fixtures (Schema wie die Beispiele der offiziellen Doku).
 
 ## Zeitzonen
 - Zeitpunkte in der DB immer in UTC speichern.

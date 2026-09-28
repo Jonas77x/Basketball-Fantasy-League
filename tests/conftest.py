@@ -10,13 +10,20 @@ FIXTURES = Path(__file__).parent / "fixtures"
 @pytest.fixture(autouse=True)
 def isolated_data_dir(tmp_path, monkeypatch):
     """Every test gets its own data directory (SQLite, cache) and no .env secrets."""
-    from fantasy import config, db
+    from fantasy import config, db, jobs
+    from fantasy.yahoo import client, draftsync
 
     monkeypatch.setenv("DATA_DIR", str(tmp_path / "var"))
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "")
+    for secret in ("ANTHROPIC_API_KEY", "YAHOO_CLIENT_ID", "YAHOO_CLIENT_SECRET"):
+        monkeypatch.setenv(secret, "")
+    monkeypatch.setenv("YAHOO_LEAGUE_ID", "60530")
     config.get_settings.cache_clear()
     db.reset_engine()
+    draftsync.reset_sync()
+    client.reset_client()
+    jobs.reset()
     yield
+    draftsync.reset_sync()
     db.reset_engine()
     config.get_settings.cache_clear()
 

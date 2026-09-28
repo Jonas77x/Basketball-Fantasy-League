@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from fantasy.draftroom import advisor_for, options_of, state_of
+from fantasy.draftroom import advisor_for, options_of, state_of, version_of
 from fantasy.engine.categories import CATEGORIES
 from fantasy.engine.draft import round_of, slot_for_pick
 from fantasy.players.names import normalize_name
@@ -208,6 +208,7 @@ def build_view(draft, kind: str, pool: PoolParams) -> dict:
 
     return {
         "kind": kind,
+        "version": version_of(draft),
         "settings": settings,
         "options": options_of(draft),
         "clock": clock,

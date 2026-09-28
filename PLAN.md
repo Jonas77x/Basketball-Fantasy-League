@@ -104,7 +104,7 @@ Spar-Optionen:
 
 **Du probierst aus:** Starten und einen Übungs-Draft machen.
 
-### Phase 2: Yahoo-Anbindung (nur lesen) + Live-Draft · Code fertig: Fr 09.10.
+### Phase 2: Yahoo-Anbindung (nur lesen) + Live-Draft · Code fertig: Fr 09.10. · ✅ Code fertig am 28.09., Praxistest wartet auf Yahoo-Freigabe
 - „Mit Yahoo verbinden“-Button (OAuth2), Token-Erneuerung, Rate-Limit, Cache
 - **Liga-Einstellungen aus der API:**
   - Kategorien, Kaderpositionen, Teams, Draft-Reihenfolge

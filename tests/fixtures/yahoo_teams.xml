@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fantasy_content xml:lang="en-US" yahoo:uri="https://fantasysports.yahooapis.com/fantasy/v2/league/nba.l.60530/teams" time="30.1ms" copyright="Data provided by Yahoo! and STATS, LLC" refresh_rate="60" xmlns:yahoo="http://www.yahooapis.com/v1/base.rng" xmlns="http://fantasysports.yahooapis.com/fantasy/v2/base.rng">
+ <league>
+  <league_key>470.l.60530</league_key>
+  <league_id>60530</league_id>
+  <name>Freunde Liga</name>
+  <url>https://basketball.fantasysports.yahoo.com/nba/60530</url>
+  <draft_status>predraft</draft_status>
+  <num_teams>12</num_teams>
+  <scoring_type>head</scoring_type>
+  <league_type>private</league_type>
+  <current_week>1</current_week>
+  <start_week>1</start_week>
+  <start_date>2026-10-20</start_date>
+  <end_week>21</end_week>
+  <end_date>2027-03-28</end_date>
+  <is_finished>0</is_finished>
+  <game_code>nba</game_code>
+  <season>2026</season>
+  <teams count="12">
+   <team>
+    <team_key>470.l.60530.t.1</team_key>
+    <team_id>1</team_id>
+    <name>Dunk Masters</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/1</url>
+    <waiver_priority>1</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>3</draft_position>
+    <managers>
+     <manager>
+      <manager_id>1</manager_id>
+      <nickname>Manager 1</nickname>
+      <guid>GUID1</guid>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.2</team_key>
+    <team_id>2</team_id>
+    <name>Splash Bros</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/2</url>
+    <waiver_priority>2</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>12</draft_position>
+    <managers>
+     <manager>
+      <manager_id>2</manager_id>
+      <nickname>Manager 2</nickname>
+      <guid>GUID2</guid>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.3</team_key>
+    <team_id>3</team_id>
+    <name>Board Men</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/3</url>
+    <waiver_priority>3</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>5</draft_position>
+    <managers>
+     <manager>
+      <manager_id>3</manager_id>
+      <nickname>Manager 3</nickname>
+      <guid>GUID3</guid>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.4</team_key>
+    <team_id>4</team_id>
+    <name>Ankle Breakers</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/4</url>
+    <waiver_priority>4</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>9</draft_position>
+    <managers>
+     <manager>
+      <manager_id>4</manager_id>
+      <nickname>Manager 4</nickname>
+      <guid>GUID4</guid>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.5</team_key>
+    <team_id>5</team_id>
+    <name>Jonas&apos; Team</name>
+    <is_owned_by_current_login>1</is_owned_by_current_login>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/5</url>
+    <waiver_priority>5</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>7</draft_position>
+    <managers>
+     <manager>
+      <manager_id>5</manager_id>
+      <nickname>Jonas</nickname>
+      <guid>GUID5</guid>
+      <is_current_login>1</is_current_login>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.6</team_key>
+    <team_id>6</team_id>
+    <name>Brick City</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/6</url>
+    <waiver_priority>6</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>1</draft_position>
+    <managers>
+     <manager>
+      <manager_id>6</manager_id>
+      <nickname>Manager 6</nickname>
+      <guid>GUID6</guid>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.7</team_key>
+    <team_id>7</team_id>
+    <name>Fast Break</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/7</url>
+    <waiver_priority>7</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>11</draft_position>
+    <managers>
+     <manager>
+      <manager_id>7</manager_id>
+      <nickname>Manager 7</nickname>
+      <guid>GUID7</guid>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.8</team_key>
+    <team_id>8</team_id>
+    <name>Zone Defense</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/8</url>
+    <waiver_priority>8</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>2</draft_position>
+    <managers>
+     <manager>
+      <manager_id>8</manager_id>
+      <nickname>Manager 8</nickname>
+      <guid>GUID8</guid>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.9</team_key>
+    <team_id>9</team_id>
+    <name>Alley Oops</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/9</url>
+    <waiver_priority>9</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>4</draft_position>
+    <managers>
+     <manager>
+      <manager_id>9</manager_id>
+      <nickname>Manager 9</nickname>
+      <guid>GUID9</guid>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.10</team_key>
+    <team_id>10</team_id>
+    <name>Triple Doubles</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/10</url>
+    <waiver_priority>10</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>10</draft_position>
+    <managers>
+     <manager>
+      <manager_id>10</manager_id>
+      <nickname>Manager 10</nickname>
+      <guid>GUID10</guid>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.11</team_key>
+    <team_id>11</team_id>
+    <name>Bench Mob</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/11</url>
+    <waiver_priority>11</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>6</draft_position>
+    <managers>
+     <manager>
+      <manager_id>11</manager_id>
+      <nickname>Manager 11</nickname>
+      <guid>GUID11</guid>
+     </manager>
+    </managers>
+   </team>
+   <team>
+    <team_key>470.l.60530.t.12</team_key>
+    <team_id>12</team_id>
+    <name>Buzzer Beaters</name>
+    <url>https://basketball.fantasysports.yahoo.com/nba/60530/12</url>
+    <waiver_priority>12</waiver_priority>
+    <number_of_moves>0</number_of_moves>
+    <number_of_trades>0</number_of_trades>
+    <league_scoring_type>head</league_scoring_type>
+    <draft_position>8</draft_position>
+    <managers>
+     <manager>
+      <manager_id>12</manager_id>
+      <nickname>Manager 12</nickname>
+      <guid>GUID12</guid>
+     </manager>
+    </managers>
+   </team>
+  </teams>
+ </league>
+</fantasy_content>
