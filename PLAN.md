@@ -69,7 +69,7 @@ Spar-Optionen:
 ### Phase 0: Sofort (du, ca. 20 Min.)
 - [ ] **Yahoo-API-Zugang beantragen.** Anleitung mit fertigen Texten: [`docs/YAHOO_ANTRAG.md`](docs/YAHOO_ANTRAG.md). Je früher, desto größer die Chance, dass die Freigabe vor dem Draft da ist.
 
-### Phase 1: Draft-Assistent (Kern) · Ziel: So 04.10.
+### Phase 1: Draft-Assistent (Kern) · Ziel: So 04.10. · ✅ fertig am 28.09.
 - Projekt-Grundgerüst, Datenbank, Start per Doppelklick (`start.bat`)
 - **Datenimport:**
   - Stats der letzten 3 Saisons von Basketball-Reference, als Datei im Projekt gespeichert

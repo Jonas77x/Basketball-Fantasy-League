@@ -1,0 +1,59 @@
+<aside id="side"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <section class="panel">
+    <h2>Dein Team ({{ v.team.size }}/{{ v.settings.rounds }})</h2>
+    {% if v.team.roster %}
+    <ul class="roster">{% for p in v.team.roster %}<li><b>{{ p.name }}</b><span>{{ p.info }}, Pick {{ p.overall }}</span></li>{% endfor %}</ul>
+    {% else %}
+    <p class="muted small">Noch niemand gedraftet. Deine Picks tauchen hier auf.</p>
+    {% endif %}
+
+    {% if v.team.has_players %}
+    <div class="muted small">Chance, eine Woche gegen ein Durchschnittsteam zu gewinnen (wenn du weiter nach Empfehlung draftest):</div>
+    <div class="bigstat">{{ v.team.win_chance|pct }}</div>
+    <div class="muted small">Im Schnitt {{ v.team.expected_cats|num(1) }} von {{ v.team.bars|length }} Kategorien pro Woche</div>
+    {% endif %}
+    {% if v.team.unfilled and v.settings.rounds - v.team.size <= v.team.unfilled|length + 2 %}
+    <p class="note">Noch offen: {{ v.team.unfilled|join(", ") }}. Achte darauf, diese Positionen zu besetzen.</p>
+    {% endif %}
+
+    <h3>Kategorien-Profil</h3>
+    {% if v.team.has_players %}
+    <p class="muted small" style="margin:0 0 .5rem">Prognose für dein fertiges Team: dein Kader plus die voraussichtlichen weiteren Picks. Grün = Stärke, Rot = Baustelle, rechts die Siegchance pro Kategorie. Kategorie antippen = bewusst opfern (Punt).</p>
+    {% else %}
+    <p class="muted small" style="margin:0 0 .5rem">Füllt sich mit deinen Picks. Kategorie antippen = bewusst opfern (Punt).</p>
+    {% endif %}
+    <div class="bars">
+      {% for b in v.team.bars %}
+      <div class="bar{% if b.off %} off{% endif %}">
+        <button type="button" class="chip{% if b.off %} punt{% else %} on{% endif %}" style="padding:.05rem .4rem;font-size:.78rem"
+                hx-post="/draft/{{ v.kind }}/punts" hx-vals='{{ {"toggle": b.key}|tojson }}' hx-swap="none" hx-include="#pool-filters"
+                title="{{ 'Nicht mehr opfern' if b.off else 'Diese Kategorie bewusst opfern' }}">{{ b.label }}</button>
+        <div class="track"><div class="fill" style="{{ b.style }}"></div></div>
+        <span class="n" title="Jetzt: {{ b.now|num(1, True) }}">{{ b.value|num(1, True) }}</span>
+        <span class="p">{% if v.team.has_players %}{{ b.win|pct }}{% endif %}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if v.punt_options %}
+    <h3>Punt-Vorschläge</h3>
+    {% for o in v.punt_options %}
+    <div class="punt">
+      <b>{{ o.label }}</b> <span class="tag good">+{{ (o.gain * 100)|round|int }} Prozentpunkte</span>
+      <div>{{ o.text }}</div>
+      <button class="btn" type="button" style="margin-top:.4rem" hx-post="/draft/{{ v.kind }}/punts"
+              hx-vals='{{ {"punts": o.punts}|tojson }}' hx-swap="none" hx-include="#pool-filters">Übernehmen</button>
+    </div>
+    {% endfor %}
+    {% endif %}
+  </section>
+
+  <section class="panel log">
+    <h2 style="font-size:1.15rem">Draft-Verlauf</h2>
+    {% if v.log %}
+    <ol>{% for p in v.log %}<li class="{{ 'me' if p.mine }}"><span class="no">#{{ p.overall }}</span><span>{{ p.name }}</span><span class="tm">{{ p.team }}</span></li>{% endfor %}</ol>
+    {% else %}
+    <p class="muted small">Sobald gepickt wird, erscheint hier jeder Pick.</p>
+    {% endif %}
+  </section>
+</aside>

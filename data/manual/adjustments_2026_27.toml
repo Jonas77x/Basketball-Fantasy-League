@@ -1,0 +1,165 @@
+# Manuelle Korrekturen für die Projektionen 2026-27 (Stand: 28.09.2026).
+#
+# Alle Felder sind optional:
+#   games         = erwartete Spiele (überschreibt die Berechnung aus der Verletzungshistorie)
+#   minutes       = erwartete Minuten pro Spiel (überschreibt die Berechnung)
+#   minutes_delta = Minuten pro Spiel dazu/weg (z. B. -4 bei Bankrolle)
+#   production    = Faktor auf alle Zählstatistiken pro Minute (z. B. 0.92 nach schwerer Verletzung)
+#   stats         = Faktoren je Statistik, z. B. { pts = 1.1, reb = 1.15 }
+#                   Schlüssel: pts, reb, ast, stl, blk, tpm, tov, fga, fta
+#   fg_pct/ft_pct = Wurfquote überschreiben (0.0–1.0)
+#   team          = Team überschreiben (Kürzel, z. B. "LAL")
+#   note          = Hinweis, der in der Oberfläche angezeigt wird
+#
+# Quellen: Verletzungsberichte (CBS Sports, Yahoo Sports, NBC Sports) Ende September 2026,
+# Hinweise aus der ursprünglichen Draft-Assistent-HTML.
+
+# ---------- Rückkehrer nach schweren Verletzungen ----------
+
+[players."Tyrese Haliburton"]
+games = 68
+production = 0.93
+note = "Achillessehnenriss (Finals 2025), 25/26 komplett verpasst"
+
+[players."Kyrie Irving"]
+games = 64
+production = 0.94
+note = "Kreuzbandriss 03/2025, 25/26 verpasst; laut Team ohne Einschränkungen"
+
+[players."Damian Lillard"]
+games = 58
+minutes = 31
+production = 0.88
+note = "Achillessehnenriss 04/2025, 25/26 verpasst, 36 Jahre"
+
+[players."Jayson Tatum"]
+games = 70
+production = 0.95
+note = "Achillessehnenriss 2025, im März 2026 zurückgekehrt (nur 16 Spiele)"
+
+[players."Dejounte Murray"]
+games = 62
+production = 0.95
+note = "Achillessehnenriss 01/2025, nur 14 Spiele 25/26"
+
+[players."Domantas Sabonis"]
+games = 68
+note = "Meniskus-OP im Februar, soll zum Saisonstart fit sein (nur 19 Spiele 25/26)"
+
+[players."Walker Kessler"]
+games = 68
+note = "Schulter-OP, nur 5 Spiele 25/26"
+
+[players."Ja Morant"]
+games = 58
+note = "Ellenbogen (UCL), nur 20 Spiele 25/26; soll zum Saisonstart fit sein"
+
+[players."Trae Young"]
+games = 66
+note = "Nur 15 Spiele 25/26; Oberschenkel-Probleme im Camp"
+
+[players."Anthony Davis"]
+games = 55
+note = "Nur 20 Spiele 25/26; Finger-Verletzung im Camp"
+
+[players."Zach Edey"]
+games = 60
+note = "Nur 11 Spiele 25/26 (Knöchel); Knöchel-Probleme im Camp"
+
+[players."Giannis Antetokounmpo"]
+games = 62
+note = "Nur 36 Spiele 25/26; Knie-Probleme im Camp"
+
+[players."Joel Embiid"]
+games = 45
+note = "Knie, wird oft geschont (38 Spiele 25/26)"
+
+[players."Kawhi Leonard"]
+games = 60
+note = "Belastungssteuerung üblich, 35 Jahre"
+
+# ---------- Fallen zum Saisonstart aus ----------
+
+[players."Jimmy Butler"]
+games = 42
+note = "Knie: fällt mindestens bis 1. Dezember aus"
+
+[players."Shaedon Sharpe"]
+games = 22
+note = "Meniskusriss: fällt mindestens bis 1. März aus"
+
+[players."Donte DiVincenzo"]
+games = 6
+note = "Achillessehne: fällt mindestens bis 1. April aus"
+
+[players."Mark Williams"]
+games = 34
+note = "Schulter: fällt mindestens bis 1. Februar aus"
+
+[players."Moses Moody"]
+games = 50
+note = "Knie: fällt mindestens bis 1. Dezember aus"
+
+[players."Johnny Furphy"]
+games = 38
+note = "Knie: fällt mindestens bis 1. Januar aus"
+
+[players."Jordan Miller"]
+games = 18
+note = "Schulter: fällt mindestens bis 1. März aus"
+
+[players."Jamir Watkins"]
+games = 5
+note = "Knie: fällt mindestens bis 1. April aus"
+
+[players."Kon Knueppel"]
+games = 72
+note = "Oberschenkel (Hamstring): verpasst wohl den Saisonstart"
+
+[players."Grant Williams"]
+games = 70
+note = "Oberschenkel (Hamstring): verpasst wohl den Saisonstart"
+
+[players."Henri Veesaar"]
+games = 0
+note = "Kreuzbandriss: fällt die ganze Saison aus"
+
+# ---------- Rollen ----------
+
+[players."DeMar DeRozan"]
+minutes_delta = -4
+note = "Neu bei DEN, evtl. von der Bank"
+
+[players."LeBron James"]
+note = "Neu bei PHI, 41 Jahre"
+
+# ---------- Rookies 2026 (grobe Schätzungen, zusätzlich zur Basis nach Draftplatz) ----------
+
+[players."Cameron Boozer"]
+minutes = 30
+stats = { pts = 1.08, reb = 1.12 }
+note = "Rookie (Pick 3): sehr produktiver Big am College, grobe Schätzung"
+
+[players."AJ Dybantsa"]
+minutes = 31
+stats = { pts = 1.15 }
+note = "Rookie (Pick 1): Scorer auf dem Flügel, grobe Schätzung"
+
+[players."Darryn Peterson"]
+minutes = 29
+stats = { pts = 1.08 }
+note = "Rookie (Pick 2): Scorer im Backcourt, grobe Schätzung"
+
+[players."Caleb Wilson"]
+minutes = 26
+stats = { reb = 1.1, blk = 1.2, stl = 1.1 }
+note = "Rookie (Pick 4): athletischer Forward, grobe Schätzung"
+
+[players."Aday Mara"]
+minutes = 16
+stats = { blk = 1.6, reb = 1.1, tpm = 0.2 }
+note = "Rookie (Pick 12): 2,21 m großer Shotblocker, grobe Schätzung"
+
+[players."Darius Acuff Jr."]
+minutes = 26
+note = "Rookie (Pick 7): Aufbauspieler, grobe Schätzung"

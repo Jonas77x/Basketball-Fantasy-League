@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% set active = v.kind %}
+{% block title %}{{ "Übungs-Draft" if v.kind == "practice" else "Draft" }} · Fantasy-Assistent{% endblock %}
+{% block body %}
+{% include "draft/_clock.html" %}
+<main class="wrap">
+  {% if v.kind == "practice" %}
+  <div class="banner">
+    <b>Übungs-Draft.</b> Die anderen Teams picken hier automatisch nach der echten Yahoo-ADP, mit etwas Zufall.
+    Dein echter Draft bleibt davon unberührt. Probier ruhig verschiedene Strategien aus.
+  </div>
+  {% endif %}
+  <div id="toast" class="toast">{{ message }}</div>
+
+  <details class="setup panel" {% if not v.clock.has_picks %}open{% endif %}>
+    <summary>Liga-Einstellungen</summary>
+    <form method="post" action="/draft/{{ v.kind }}/settings" class="setup-body">
+      <div class="field"><label for="s-teams">Teams in der Liga</label>
+        <input id="s-teams" name="teams" type="number" min="4" max="20" value="{{ v.settings.teams }}"></div>
+      <div class="field"><label for="s-slot">Deine Draft-Position</label>
+        <input id="s-slot" name="my_slot" type="number" min="1" max="20" value="{{ v.settings.my_slot }}"></div>
+      <div class="field"><label for="s-rounds">Runden (Kadergröße)</label>
+        <input id="s-rounds" name="rounds" type="number" min="5" max="25" value="{{ v.settings.rounds }}"></div>
+      <div class="field full"><label for="s-roster">Kaderplätze (Yahoo-Standard; BN = Bank)</label>
+        <input id="s-roster" name="roster" value="{{ v.settings.roster | join(' ') }}"></div>
+      <div class="field full"><label for="s-names">Team-Namen in Draft-Reihenfolge (optional, einer pro Zeile)</label>
+        <textarea id="s-names" name="team_names" rows="3" placeholder="Team von Max&#10;Team von Lea&#10;…">{{ v.settings.team_names | join('\n') }}</textarea></div>
+      <label class="check full"><input type="checkbox" name="risk" value="1" {% if v.settings.risk %}checked{% endif %}>
+        <span>Ausfallrisiko einrechnen: Für erwartete Fehlspiele wird ein Ersatzspieler vom Waiver angenommen.</span></label>
+      {% if v.kind == "practice" %}
+      <label class="check full"><input type="checkbox" name="auto_opponents" value="1" {% if v.options.get("auto_opponents", True) %}checked{% endif %}>
+        <span>Gegner nach meinem Pick automatisch bis zu meinem nächsten Pick picken lassen</span></label>
+      {% endif %}
+      <div class="full" style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn primary" type="submit">Einstellungen speichern</button>
+      </div>
+    </form>
+    <form method="post" action="/draft/{{ v.kind }}/reset" onsubmit="return confirm('Wirklich alle Picks dieses Drafts löschen?')" style="margin-top:.8rem">
+      <button class="btn danger" type="submit">Draft zurücksetzen</button>
+    </form>
+  </details>
+
+  <div class="grid">
+    <div>
+      <section class="panel">
+        <h2>Pick eintragen</h2>
+        <div class="entry">
+          <input id="quick" name="q" type="search" autocomplete="off" autofocus
+                 placeholder="Name tippen, Enter = Pick eintragen"
+                 hx-get="/draft/{{ v.kind }}/search" hx-trigger="input changed delay:120ms, search"
+                 hx-target="#quick-results" hx-swap="innerHTML" aria-label="Spieler suchen">
+        </div>
+        <div class="results" id="quick-results"></div>
+        <p class="kbd">Ein paar Buchstaben reichen. Die wahrscheinlichsten Picks stehen oben. ↑/↓ wählen, Enter trägt den Pick für das Team ein, das gerade dran ist.</p>
+      </section>
+
+      {% include "draft/_recos.html" %}
+
+      <section class="panel">
+        <h2>Spielerpool</h2>
+        <form id="pool-filters" class="tools" onsubmit="return false"
+              hx-get="/draft/{{ v.kind }}/pool" hx-target="#pool-list" hx-swap="outerHTML"
+              hx-trigger="input changed delay:250ms from:#pool-q, change from:#pool-sort, pool-change">
+          <input type="search" id="pool-q" name="pool_q" placeholder="Spieler oder Team suchen" aria-label="Spielerpool durchsuchen">
+          <input type="hidden" name="pool_pos" id="pool-pos" value="Alle">
+          <input type="hidden" name="pool_limit" id="pool-limit" value="60">
+          <div class="chips" id="pos-chips">
+            {% for p in v.positions %}<button type="button" class="chip {% if p == 'Alle' %}on{% endif %}" data-pos="{{ p }}">{{ p }}</button>{% endfor %}
+          </div>
+          <select name="pool_sort" id="pool-sort" aria-label="Sortierung">
+            {% for key, text in v.sorts.items() %}<option value="{{ key }}">Sortiert: {{ text }}</option>{% endfor %}
+          </select>
+        </form>
+        {% include "draft/_pool.html" %}
+      </section>
+    </div>
+    {% include "draft/_side.html" %}
+  </div>
+
+  <p class="foot">
+    Prognosen für 2026-27 aus den letzten drei Saisons (Basketball-Reference), angepasst um Alter, Minuten,
+    Verletzungshistorie und aktuelle Verletzungen; Rookies sind grobe Schätzungen. Yahoo-ADP und Yahoo-Positionen
+    von Hashtag Basketball{% if meta.get("hashtag_adp.csv") %} (Stand {{ meta["hashtag_adp.csv"]["fetched_at"][:10] }}){% endif %}.
+    Der Wert ist die Summe der Z-Werte über alle nicht geopferten Kategorien, schwankungsanfällige Kategorien
+    (STL, BLK, TO, FG%, FT%) sind für Head-to-Head etwas geringer gewichtet.
+  </p>
+</main>
+{% endblock %}

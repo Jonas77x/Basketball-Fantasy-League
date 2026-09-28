@@ -1,0 +1,22 @@
+{
+  "bref_totals_2024.csv": {
+    "fetched_at": "2026-09-28T11:11:57+00:00",
+    "rows": 572
+  },
+  "bref_totals_2025.csv": {
+    "fetched_at": "2026-09-28T11:11:57+00:00",
+    "rows": 569
+  },
+  "bref_totals_2026.csv": {
+    "fetched_at": "2026-09-28T11:11:57+00:00",
+    "rows": 582
+  },
+  "bref_draft_2026.csv": {
+    "fetched_at": "2026-09-28T11:11:57+00:00",
+    "rows": 60
+  },
+  "hashtag_adp.csv": {
+    "fetched_at": "2026-09-28T11:11:57+00:00",
+    "rows": 418
+  }
+}

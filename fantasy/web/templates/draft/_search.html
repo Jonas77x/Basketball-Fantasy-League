@@ -1,0 +1,13 @@
+{% for h in hits %}
+<button type="button" class="{{ 'active' if loop.first }}" hx-post="/draft/{{ kind }}/pick" hx-vals='{{ {"player_id": h.id}|tojson }}'
+        hx-swap="none" hx-include="#pool-filters" {% if done %}disabled{% endif %}>
+  <span><b>{{ h.name }}</b> <span class="meta">{{ h.team }}, {{ h.pos }}</span></span>
+  <span class="meta">{% if h.adp %}ADP {{ h.adp|num(0) }} · {% endif %}{{ "für dich" if my_turn else "Pick eines Gegners" }}</span>
+</button>
+{% endfor %}
+{% if q|length >= 3 %}
+<button type="button" class="{{ 'active' if not hits }}" hx-post="/draft/{{ kind }}/pick" hx-vals='{{ {"name": q}|tojson }}'
+        hx-swap="none" hx-include="#pool-filters" {% if done %}disabled{% endif %}>
+  <span>„{{ q }}“ als Pick eintragen <span class="meta">(nicht in der Liste, z. B. später Rookie)</span></span>
+</button>
+{% endif %}

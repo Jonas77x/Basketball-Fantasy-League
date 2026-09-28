@@ -1,0 +1,27 @@
+<header class="clock" id="clock"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <div class="clock-in">
+    <div class="pickno"><span class="lbl">Pick</span><span class="num">{{ v.clock.pick }}</span></div>
+    <div class="clock-meta">
+      <div class="rd">Runde {{ v.clock.round }} von {{ v.settings.rounds }}, Pick {{ v.clock.in_round }} in der Runde · du pickst an Position {{ v.settings.my_slot }}</div>
+      {% if v.clock.done %}
+        <div class="turn">Draft abgeschlossen</div>
+      {% elif v.clock.my_turn %}
+        <div class="turn go">Du bist dran!</div>
+      {% elif v.clock.next_pick %}
+        <div class="turn">{{ v.clock.on_clock }} ist dran · noch {{ v.clock.picks_until }} {{ "Pick" if v.clock.picks_until == 1 else "Picks" }} bis zu dir (Pick {{ v.clock.next_pick }})</div>
+      {% else %}
+        <div class="turn">{{ v.clock.on_clock }} ist dran · du hast keine Picks mehr</div>
+      {% endif %}
+      <div class="strip" aria-hidden="true">{% for s in v.clock.strip %}<span class="{{ 'past' if s.past }} {{ 'now' if s.now }} {{ 'me' if s.me }}" title="Pick {{ s.n }}"></span>{% endfor %}</div>
+    </div>
+    <div class="clock-actions">
+      <button class="btn-clock" type="button" hx-post="/draft/{{ v.kind }}/undo" hx-swap="none" hx-include="#pool-filters"
+              {% if not v.clock.has_picks %}disabled{% endif %}>
+        {{ "Meinen letzten Pick zurücknehmen" if v.kind == "practice" else "Letzten Pick zurücknehmen" }}
+      </button>
+      {% if v.kind == "practice" and not v.clock.my_turn and not v.clock.done %}
+      <button class="btn-clock" type="button" hx-post="/draft/practice/simulate" hx-swap="none" hx-include="#pool-filters">Gegner picken lassen</button>
+      {% endif %}
+    </div>
+  </div>
+</header>

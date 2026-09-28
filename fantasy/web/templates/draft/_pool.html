@@ -1,0 +1,19 @@
+<div id="pool-list"{% if oob %} hx-swap-oob="true"{% endif %}>
+  {% for r in v.pool.rows %}
+  <div class="row">
+    <div class="rk">{{ r.rank }}</div>
+    <div class="who"><b>{{ r.name }}</b><span>{{ r.team }}, {{ r.pos }}, {{ r.age }} J., ~{{ r.games|num(0) }} Spiele{% if r.adp %}, ADP {{ r.adp|num(0) }}{% endif %}{% if r.p is not none %}, noch da: {{ r.p|pct }}{% endif %}{% for n in r.notes %} <em>{{ n }}</em>{% endfor %}</span></div>
+    <div class="stats">{% for c in r.cells %}<span class="c{% if c.off %} off{% endif %}" style="{{ c.style }}"><i>{{ c.label }}</i>{{ c.text }}</span>{% endfor %}</div>
+    <div class="val" title="{{ 'Wert inkl. Team-Bedarf' if v.pool.params.sort != 'value' else 'Gesamtwert' }}">{{ r.score|num(1) }}<small>{{ "Fit" if v.pool.params.sort != "value" else "Wert" }}</small></div>
+    <div class="act">
+      <button class="btn{% if v.clock.my_turn %} primary{% endif %}" type="button" hx-post="/draft/{{ v.kind }}/pick"
+              hx-vals='{{ {"player_id": r.id}|tojson }}' hx-swap="none" hx-include="#pool-filters"
+              title="{{ 'Für dich draften' if v.clock.my_turn else 'Als Pick von ' ~ v.clock.on_clock ~ ' eintragen' }}"
+              {% if v.clock.done %}disabled{% endif %}>{{ "Draften" if v.clock.my_turn else "Weg" }}</button>
+    </div>
+  </div>
+  {% else %}
+  <p class="empty">Kein Spieler passt zur Suche.</p>
+  {% endfor %}
+  {% if v.pool.more %}<button class="btn" type="button" style="margin-top:.7rem" onclick="morePool()">Mehr Spieler zeigen ({{ v.pool.total }} verfügbar)</button>{% endif %}
+</div>

@@ -1,0 +1,38 @@
+<section class="panel" id="recos"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <div class="recos-head">
+    <div>
+      {% if v.mode == "my_turn" %}
+        <h2>{{ v.headline }}</h2>
+        <p class="muted small" style="margin:0">Deine drei besten Optionen. Berücksichtigt, wer bis zu deinem nächsten Pick wahrscheinlich weg ist.</p>
+      {% elif v.mode == "waiting" %}
+        <h2>Prognose für deinen Pick {{ v.clock.next_pick }}</h2>
+        <p class="muted small" style="margin:0">So sieht es aus, wenn die anderen nach Yahoo-ADP picken ({{ v.clock.picks_until }} Picks bis zu dir).</p>
+      {% else %}
+        <h2>Draft abgeschlossen</h2>
+        <p class="muted small" style="margin:0">Dein Team steht rechts. Viel Erfolg in der Saison!</p>
+      {% endif %}
+    </div>
+    {% if ai_enabled and v.mode != "done" %}
+    <button class="btn ask" type="button" hx-post="/draft/{{ v.kind }}/ai" hx-target="#ai-box" hx-swap="innerHTML"
+            hx-on::before-request="this.textContent='KI überlegt …'" hx-on::after-request="this.textContent='KI um Rat fragen'">KI um Rat fragen</button>
+    {% endif %}
+  </div>
+  <div class="cards">
+    {% for c in v.recos %}
+    <div class="card{% if loop.first %} first{% endif %}">
+      <div class="nm">{{ c.name }}</div>
+      <div class="small muted">{{ c.team }}, {{ c.pos }} · Wert {{ c.value|num(1, True) }}{% if c.adp %} · ADP {{ c.adp|num(0) }}{% endif %}{% if c.p is not none and v.mode == "waiting" %} · noch da: {{ c.p|pct }}{% endif %}</div>
+      {% if c.tags %}<div class="tags">{% for t in c.tags %}<span class="tag{% if t == 'Rookie' %} info{% elif t == 'Schnäppchen' %} good{% endif %}">{{ t }}</span>{% endfor %}</div>{% endif %}
+      <ul>{% for r in c.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+      {% for n in c.notes %}<div class="note">{{ n }}</div>{% endfor %}
+      {% if v.mode == "my_turn" %}
+      <button class="btn primary" type="button" hx-post="/draft/{{ v.kind }}/pick" hx-vals='{{ {"player_id": c.id}|tojson }}'
+              hx-swap="none" hx-include="#pool-filters">{{ c.last_name }} draften</button>
+      {% endif %}
+    </div>
+    {% else %}
+    <p class="empty">Keine Spieler mehr in der Liste. Trag weitere Picks über die Schnelleingabe ein.</p>
+    {% endfor %}
+  </div>
+  <div class="ai" id="ai-box"></div>
+</section>
